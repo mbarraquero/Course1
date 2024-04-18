@@ -1,28 +1,40 @@
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { ModalModule } from 'ngx-bootstrap/modal';
 
 import { StateUserModule } from 'src/state-user';
+import { UserSessionModule } from 'src/user-session';
 
-import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { NavBarComponent } from './nav-bar/nav-bar.component';
+import { LoginModalComponent } from './login-modal/login-modal.component';
+import { AppRoutingModule } from './routing/app-routing.module';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    NavBarComponent,
+    LoginModalComponent,
   ],
   imports: [
     HttpClientModule,
+    ReactiveFormsModule,
     BrowserModule,
     BrowserAnimationsModule,
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
     StoreDevtoolsModule.instrument({ maxAge: 25 }), // disable for prod
+    BsDropdownModule.forRoot(),
+    ModalModule.forRoot(),
     StateUserModule,
+    UserSessionModule,
     AppRoutingModule,
   ],
   providers: [],

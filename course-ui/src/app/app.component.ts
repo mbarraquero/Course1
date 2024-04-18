@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { filter, withLatestFrom } from 'rxjs';
 
 import { StateUserFacade } from 'src/state-user';
+import { UserSessionService } from 'src/user-session';
 
 @Component({
   selector: 'app-root',
@@ -10,13 +12,19 @@ import { StateUserFacade } from 'src/state-user';
 export class AppComponent implements OnInit {
   title = 'course-ui';
 
-  users$ = this.userFacade.allUsers$;
-
   constructor(
+    private readonly userSessionService: UserSessionService,
     private readonly userFacade: StateUserFacade,
   ) {}
 
   ngOnInit() {
-    this.userFacade.init();
+    this.userSessionService.loading$
+      .pipe(
+        filter((loading) => !loading),
+        withLatestFrom(this.userSessionService.loggedIn$)
+      )
+      .subscribe(([_, loggedIn]) => {
+        if (loggedIn) this.userFacade.init();
+      });
   }
 }

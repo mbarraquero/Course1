@@ -107,7 +107,7 @@ describe('User state', () => {
           .pipe(take(1))
           .subscribe(([loading, allUsers]) => {
             expect(loading).toBe(false);
-            expect(allUsers).toBe(mockUsers);
+            expect(allUsers).toEqual(mockUsers);
             done();
           });
       });

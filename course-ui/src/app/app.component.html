@@ -1,9 +1,5 @@
+<app-nav-bar></app-nav-bar>
 <div class="content">
   <span>{{ title }} app is running!</span>
-  <ul>
-    <li *ngFor="let user of users$ | async">
-      {{ user | json }}
-    </li>
-  </ul>
+  <router-outlet></router-outlet>
 </div>
-<router-outlet></router-outlet>
