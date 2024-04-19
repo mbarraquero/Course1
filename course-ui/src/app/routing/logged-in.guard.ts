@@ -11,7 +11,7 @@ export const loggedInGuard: CanMatchFn = () => {
     take(1),
     switchMap((loaded) => {
       const getLoggedIn$ = () => userSessionService.loggedIn$.pipe(
-        map((loggedIn) => loggedIn || router.createUrlTree(['/home']))
+        map((loggedIn) => loggedIn || router.createUrlTree(['/']))
       );
       if (loaded) return getLoggedIn$();
       userSessionService.init();

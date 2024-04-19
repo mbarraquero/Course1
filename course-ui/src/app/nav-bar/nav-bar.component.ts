@@ -30,6 +30,6 @@ export class NavBarComponent {
     this.userSessionService.logout();
     this.userSessionService.loggedIn$
       .pipe(first((loggedIn) => !loggedIn))
-      .subscribe(() => this.router.navigate(['/home']));
+      .subscribe(() => this.router.navigate(['/']));
   }
 }

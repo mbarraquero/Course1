@@ -5,18 +5,30 @@ import { loggedOutGuard } from './logged-out.guard';
 
 const routes: Routes = [
   {
+    path: 'members',
+    canMatch: [loggedInGuard],
+    loadChildren: () => import('../../view-members').then((m) => m.ViewMembersModule),
+  },
+  {
     path: 'lists',
     canMatch: [loggedInGuard],
     loadChildren: () => import('../../view-lists').then((m) => m.ViewListsModule),
   },
   {
-    path: 'home',
+    path: 'messages',
+    canMatch: [loggedInGuard],
+    loadChildren: () => import('../../view-messages').then((m) => m.ViewMessagesModule),
+  },
+  {
+    path: '',
     canMatch: [loggedOutGuard],
     loadChildren: () => import('../../view-home-page').then((m) => m.ViewHomePageModule),
+    pathMatch: 'full',
   },
   {
     path: '**',
-    redirectTo: 'home',
+    redirectTo: '',
+    pathMatch: 'full',
   }
 ];
 

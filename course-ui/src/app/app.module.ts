@@ -8,13 +8,15 @@ import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { ModalModule } from 'ngx-bootstrap/modal';
+import { ToastrModule } from 'ngx-toastr';
 
+import { ErrorService } from 'src/error';
 import { StateUserModule } from 'src/state-user';
 import { UserSessionModule } from 'src/user-session';
 
 import { AppComponent } from './app.component';
-import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { LoginModalComponent } from './login-modal/login-modal.component';
+import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { AppRoutingModule } from './routing/app-routing.module';
 
 @NgModule({
@@ -33,11 +35,14 @@ import { AppRoutingModule } from './routing/app-routing.module';
     StoreDevtoolsModule.instrument({ maxAge: 25 }), // disable for prod
     BsDropdownModule.forRoot(),
     ModalModule.forRoot(),
+    ToastrModule.forRoot({
+      positionClass: 'toast-bottom-right',
+    }),
     StateUserModule,
     UserSessionModule,
     AppRoutingModule,
   ],
-  providers: [],
+  providers: [ErrorService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

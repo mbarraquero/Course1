@@ -1,9 +1,12 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BsModalRef } from 'ngx-bootstrap/modal';
+import { ToastrService } from 'ngx-toastr';
 import { first, withLatestFrom } from 'rxjs';
 
+import { ErrorService } from 'src/error/error.service';
 import { UserSessionService } from 'src/user-session';
 
 @Component({
@@ -20,8 +23,10 @@ export class LoginModalComponent {
 
   constructor(
     private readonly userSessionService: UserSessionService,
-    private readonly modalRef: BsModalRef,
+    private readonly toastr: ToastrService,
+    private readonly errorService: ErrorService,
     private readonly router: Router,
+    private readonly modalRef: BsModalRef,
   ) {}
 
   login() {
@@ -36,10 +41,13 @@ export class LoginModalComponent {
         withLatestFrom(this.userSessionService.error$)
       )
       .subscribe(([_, error]) => {
-        if (!!error) alert(JSON.stringify(error)); // TODO
+        if (!!error) {
+          if (error.status === 401) this.toastr.error('Invalid username or password');
+          else this.errorService.handleError(error as HttpErrorResponse);
+        }
         else {
           this.close();
-          this.router.navigate(['/lists']);
+          this.router.navigate(['/members']);
         }
       });
   }

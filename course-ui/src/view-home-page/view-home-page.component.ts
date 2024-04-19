@@ -1,8 +1,10 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { first, withLatestFrom } from 'rxjs';
 
+import { ErrorService } from 'src/error/error.service';
 import { UserSessionService } from 'src/user-session';
 
 @Component({
@@ -20,6 +22,7 @@ export class ViewHomePageComponent {
 
   constructor(
     private readonly userSessionService: UserSessionService,
+    private readonly errorService: ErrorService,
     private readonly router: Router,
   ) {}
 
@@ -35,8 +38,8 @@ export class ViewHomePageComponent {
         withLatestFrom(this.userSessionService.error$)
       )
       .subscribe(([_, error]) => {
-        if (!!error) alert(JSON.stringify(error)); // TODO
-        else this.router.navigate(['/lists']);
+        if (!!error) this.errorService.handleError(error as HttpErrorResponse);
+        else this.router.navigate(['/members']);
       });
   }
 

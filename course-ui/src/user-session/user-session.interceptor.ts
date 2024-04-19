@@ -20,7 +20,7 @@ export class UserSessionInterceptor implements HttpInterceptor {
     return this.handleRequest(request, next).pipe(
       catchError((error) => {
         if (error.status !== 401) return throwError(() => error);
-        alert('TODO: Unauthorized');
+        alert('TODO: Unauthorized - must refresh');
         return throwError(() => error);
       })
     );

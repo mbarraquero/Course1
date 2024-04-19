@@ -11,7 +11,7 @@ export const loggedOutGuard: CanMatchFn = () => {
     take(1),
     switchMap((loaded) => {
       const getLoggedIn$ = () => userSessionService.loggedIn$.pipe(
-        map((loggedIn) => !loggedIn || router.createUrlTree(['/lists']))
+        map((loggedIn) => !loggedIn || router.createUrlTree(['/members']))
       );
       if (loaded) return getLoggedIn$();
       userSessionService.init();
