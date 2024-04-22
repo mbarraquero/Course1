@@ -10,10 +10,15 @@ export class StateUserFacade {
   loading$ = this.store.pipe(select(UserSelectors.getLoading));
   error$ = this.store.pipe(select(UserSelectors.getError));
   allUsers$ = this.store.pipe(select(UserSelectors.getAllUsers));
+  selectedUser$ = this.store.pipe(select(UserSelectors.getSelectedUser));
 
   constructor(private readonly store: Store) {}
 
   init() {
     this.store.dispatch(UserActions.init());
+  }
+
+  loadUser(userName: string) {
+    this.store.dispatch(UserActions.loadUser({ userName }));
   }
 }

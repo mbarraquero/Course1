@@ -16,3 +16,16 @@ export const initFailure = createAction(
   prependLabel('Init Failure', 'api'),
   props<{ error: any }>()
 );
+
+export const loadUser = createAction(
+  prependLabel('Load User', 'page'),
+  props<{ userName: string }>()
+);
+export const loadUserSuccess = createAction(
+  prependLabel('Load User Success', 'api'),
+  props<{ user: User }>()
+);
+export const loadUserFailure = createAction(
+  prependLabel('Load User Failure', 'api'),
+  props<{ error: any }>()
+);

@@ -10,6 +10,7 @@ export interface State extends EntityState<User> {
   loaded: boolean;
   loading: number;
   error?: any;
+  selectedUser?: User;
 };
 
 export interface UserPartialState {
@@ -43,6 +44,22 @@ export const userReducer = createReducer(
       }
     ) 
   ),
+  on(UserActions.initFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(UserActions.loadUser, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+    selectedUser: undefined,
+  })),
+  on(UserActions.loadUserSuccess, (state, { user }) => ({
+    ...state,
+    loading: state.loading - 1,
+    selectedUser: user
+  })),
   on(UserActions.initFailure, (state, { error }) => ({
     ...state,
     loading: state.loading - 1,

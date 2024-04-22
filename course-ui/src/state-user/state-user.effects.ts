@@ -22,10 +22,47 @@ export class UserEffects {
           map((apiUsers) => UserActions.initSuccess({
             users: apiUsers.map((apiUser) => ({
               id: apiUser.id,
-              userName: apiUser.userName
+              userName: apiUser.userName,
+              knownAs: apiUser.knownAs,
+              photoUrl: apiUser.photoUrl,
+              city: apiUser.city,
             } as User))
           })),
           catchError((error) => of(UserActions.initFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        )
+      )
+    )
+  );
+
+  loadUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.loadUser),
+      switchMap(({ userName: username }) =>
+        // just in case this entity changes in the future, otherwise we could use the id to select from the loaded list
+        this.api.getUserByName(username).pipe(
+          map((apiUser) => UserActions.loadUserSuccess({
+            user: {
+              id: apiUser.id,
+              userName: apiUser.userName,
+              photoUrl: apiUser.photoUrl,
+              age: apiUser.age,
+              knownAs: apiUser.knownAs,
+              created: apiUser.created,
+              lastActive: apiUser.lastActive,
+              introduction: apiUser.introduction,
+              lookingFor: apiUser.lookingFor,
+              interests: apiUser.interests,
+              city: apiUser.city,
+              country: apiUser.country,
+              photos: apiUser.photos.map((apiPhoto) => ({
+                id: apiPhoto.id,
+                url: apiPhoto.url,
+              }))
+            } as User
+          })),
+          catchError((error) => of(UserActions.loadUserFailure({
             error: this.errorService.getErrorMessage(error)
           })))
         )
@@ -38,6 +75,7 @@ export class UserEffects {
       this.actions$.pipe(
         ofType(
           UserActions.initFailure,
+          UserActions.loadUserFailure,
           // drop here errors to be generically handled
         ),
         tap(({ error }) => this.errorService.handleError(error as HttpErrorResponse))

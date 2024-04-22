@@ -15,21 +15,21 @@
       </ul>
       <div class="btn-group" dropdown>
         <button
-          id="button-animated"
+          id="button-user-session"
           dropdownToggle
           type="button"
           class="btn btn-primary dropdown-toggle"
-          aria-controls="dropdown-animated"
+          aria-controls="dropdown-user-session"
         >
           Welcome {{ username$ | async }}
           <span class="caret"></span>
         </button>
         <ul
-          id="dropdown-animated"
+          id="dropdown-user-session"
           *dropdownMenu
-          class="dropdown-menu"
+          class="dropdown-menu dropdown-menu-right"
           role="menu"
-          aria-labelledby="button-animated"
+          aria-labelledby="button-user-session"
         >
           <li role="menuitem"><a class="dropdown-item" href="#">Edit Profile</a></li>
           <li role="menuitem" (click)="logout()"><a class="dropdown-item">Logout</a></li>

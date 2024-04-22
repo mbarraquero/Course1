@@ -1,11 +1,13 @@
 import { HttpBackend, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
+import { environment } from 'src/environments/environment';
+
 import { ApiLoginDto, ApiRegisterDto, ApiUserDto } from './http-user-session.models';
 
 @Injectable()
 export class HttpUserSessionService {
-  private readonly apiUrl = 'https://localhost:44349/';
+  private readonly apiUrl = environment.apiUrl;
 
   private http: HttpClient;
 
@@ -16,12 +18,12 @@ export class HttpUserSessionService {
   }
 
   register(registerData: ApiRegisterDto) {
-    const requestUrl = this.apiUrl + 'api/Account/register';
+    const requestUrl = this.apiUrl + 'Account/register';
     return this.http.post<ApiUserDto>(requestUrl, registerData);
   }
 
   login(loginData: ApiLoginDto) {
-    const requestUrl = this.apiUrl + 'api/Account/login';
+    const requestUrl = this.apiUrl + 'Account/login';
     return this.http.post<ApiUserDto>(requestUrl, loginData);
   }
 }

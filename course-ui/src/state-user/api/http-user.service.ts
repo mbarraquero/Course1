@@ -1,25 +1,27 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs';
-import { ApiUser } from './http-user.models';
+
+import { environment } from 'src/environments/environment';
+import { ApiMemberDto } from './http-user.models';
 
 @Injectable()
 export class HttpUserService {
-  private readonly apiUrl = 'https://localhost:44349/';
+  private readonly apiUrl = environment.apiUrl;
 
   constructor(
     private readonly http: HttpClient
   ) {}
 
   getUsers() {
-    const requestUrl = this.apiUrl + 'api/users';
-    return this.http.get<ApiUser[]>(requestUrl)
+    const requestUrl = this.apiUrl + 'Users';
+    return this.http.get<ApiMemberDto[]>(requestUrl)
       .pipe(map((response) => response));
   }
 
-  getUser(userId: number) {
-    const requestUrl = this.apiUrl + 'api/users/' + userId;
-    return this.http.get<ApiUser>(requestUrl)
+  getUserByName(username: string) {
+    const requestUrl = this.apiUrl + 'Users/' + username;
+    return this.http.get<ApiMemberDto>(requestUrl)
       .pipe(map((response) => response));
   }
 }

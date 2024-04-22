@@ -5,7 +5,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { Store, StoreModule } from '@ngrx/store';
 import { combineLatest, of, Subject, take } from 'rxjs';
 
-import { ApiUser } from './api/http-user.models';
+import { ApiMemberDto } from './api/http-user.models';
 import { HttpUserService } from './api/http-user.service';
 
 import { UserEffects } from './state-user.effects';
@@ -23,16 +23,16 @@ describe('User state', () => {
     {
       id: 1,
       userName: 'John Bar'
-    },
+    } as User,
     {
       id: 2,
       userName: 'Foo Doe',
-    },
+    } as User,
   ];
   const toApiUser = (user: User) => ({
     id: user.id,
     userName: user.userName,
-  } as ApiUser);
+  } as ApiMemberDto);
   const mockError = { description: 'Failure!' };
 
   let store: Store<TestSchema>;
@@ -82,9 +82,9 @@ describe('User state', () => {
   });
 
   describe('#init', () => {
-    let getUsersSubj: Subject<ApiUser[]>;
+    let getUsersSubj: Subject<ApiMemberDto[]>;
     beforeEach(() => {
-      getUsersSubj = new Subject<ApiUser[]>();
+      getUsersSubj = new Subject<ApiMemberDto[]>();
       mockApi.getUsers = jasmine.createSpy().and.returnValue(getUsersSubj.asObservable());
     });
 
