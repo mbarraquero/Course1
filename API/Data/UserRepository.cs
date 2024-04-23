@@ -8,10 +8,11 @@ namespace API.Data;
 
 public interface IUserRepository
 {
+    Task<AppUser> GetUserByUsernameAsync(string username);
     Task<MemberDto> GetMemberByUsernameAsync(string username);
     Task<IEnumerable<MemberDto>> GetMembersAsync();
     Task<AppUser> AddUserAsync(AppUser user);
-    Task<AppUser> UpdateUserAsync(AppUser user);
+    Task<MemberDto> UpdateMemberAsync(AppUser user, MemberUpdateDto member);
     Task<IEnumerable<AppUser>> UpdateUsersAsync(IEnumerable<AppUser> users);
 }
 
@@ -31,12 +32,12 @@ public class UserRepository : IUserRepository
     //    return await _context.Users.FindAsync(id);
     //}
 
-    //public async Task<AppUser> GetUserByUsernameAsync(string username)
-    //{
-    //    return await _context.Users
-    //        .Include(p => p.Photos)
-    //        .SingleOrDefaultAsync(user => user.UserName == username);
-    //}
+    public async Task<AppUser> GetUserByUsernameAsync(string username)
+    {
+        return await _context.Users
+            .Include(p => p.Photos)
+            .SingleOrDefaultAsync(user => user.UserName == username);
+    }
 
     //public async Task<IEnumerable<AppUser>> GetUsersAsync()
     //{
@@ -68,10 +69,10 @@ public class UserRepository : IUserRepository
         return await SaveAll(savedUser);
     }
 
-    public async Task<AppUser> UpdateUserAsync(AppUser user)
+    public async Task<MemberDto> UpdateMemberAsync(AppUser user, MemberUpdateDto member)
     {
-        var updatedUser = _context.Update(user).Entity;
-        return await SaveAll(updatedUser);
+        var updatedUser = _mapper.Map(member, user);
+        return await SaveAll(_mapper.Map<MemberDto>(updatedUser));
     }
 
     public async Task<IEnumerable<AppUser>> UpdateUsersAsync(IEnumerable<AppUser> users)

@@ -21,3 +21,11 @@ export interface ApiPhotoDto {
   url: string;
   isMain: boolean;
 }
+
+export interface ApiMemberUpdateDto {
+  introduction: string;
+  lookingFor: string;
+  interests: string;
+  city: string;
+  country: string;
+}

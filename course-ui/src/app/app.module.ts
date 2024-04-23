@@ -13,6 +13,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { ErrorService } from 'src/error';
 import { StateUserModule } from 'src/state-user';
 import { UserSessionModule } from 'src/user-session';
+import { UtilLoaderComponent } from 'src/util-loader';
 
 import { AppComponent } from './app.component';
 import { LoginModalComponent } from './login-modal/login-modal.component';
@@ -40,6 +41,7 @@ import { AppRoutingModule } from './routing/app-routing.module';
     }),
     StateUserModule,
     UserSessionModule,
+    UtilLoaderComponent,
     AppRoutingModule,
   ],
   providers: [ErrorService],

@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { ErrorService } from 'src/error';
 
+import { ApiMemberDto } from './api/http-user.models';
 import { HttpUserService } from './api/http-user.service';
 
 import * as UserActions from './state-user.actions';
@@ -39,28 +40,11 @@ export class UserEffects {
   loadUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.loadUser),
-      switchMap(({ userName: username }) =>
+      switchMap(({ userName }) =>
         // just in case this entity changes in the future, otherwise we could use the id to select from the loaded list
-        this.api.getUserByName(username).pipe(
+        this.api.getUserByName(userName).pipe(
           map((apiUser) => UserActions.loadUserSuccess({
-            user: {
-              id: apiUser.id,
-              userName: apiUser.userName,
-              photoUrl: apiUser.photoUrl,
-              age: apiUser.age,
-              knownAs: apiUser.knownAs,
-              created: apiUser.created,
-              lastActive: apiUser.lastActive,
-              introduction: apiUser.introduction,
-              lookingFor: apiUser.lookingFor,
-              interests: apiUser.interests,
-              city: apiUser.city,
-              country: apiUser.country,
-              photos: apiUser.photos.map((apiPhoto) => ({
-                id: apiPhoto.id,
-                url: apiPhoto.url,
-              }))
-            } as User
+            user: this.toUser(apiUser)
           })),
           catchError((error) => of(UserActions.loadUserFailure({
             error: this.errorService.getErrorMessage(error)
@@ -70,12 +54,37 @@ export class UserEffects {
     )
   );
 
+  updateUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.updateUser),
+      switchMap(({ userUpdate }) => {
+        const apiUserUpdate = {
+          introduction: userUpdate.introduction,
+          lookingFor: userUpdate.lookingFor,
+          interests: userUpdate.interests,
+          city: userUpdate.city,
+          country: userUpdate.country,
+        }
+        // just in case this entity changes in the future, otherwise we could use the id to select from the loaded list
+        return this.api.updateUser(apiUserUpdate).pipe(
+          map((apiUser) => UserActions.updateUserSuccess({
+            user: this.toUser(apiUser)
+          })),
+          catchError((error) => of(UserActions.updateUserFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        );
+      })
+    )
+  );
+
   genericError$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(
           UserActions.initFailure,
           UserActions.loadUserFailure,
+          UserActions.updateUserFailure,
           // drop here errors to be generically handled
         ),
         tap(({ error }) => this.errorService.handleError(error as HttpErrorResponse))
@@ -89,4 +98,25 @@ export class UserEffects {
     private readonly api: HttpUserService,
     private readonly errorService: ErrorService,
   ) {}
+
+  private toUser(apiUser: ApiMemberDto) {
+    return {
+      id: apiUser.id,
+      userName: apiUser.userName,
+      photoUrl: apiUser.photoUrl,
+      age: apiUser.age,
+      knownAs: apiUser.knownAs,
+      created: apiUser.created,
+      lastActive: apiUser.lastActive,
+      introduction: apiUser.introduction,
+      lookingFor: apiUser.lookingFor,
+      interests: apiUser.interests,
+      city: apiUser.city,
+      country: apiUser.country,
+      photos: apiUser.photos.map((apiPhoto) => ({
+        id: apiPhoto.id,
+        url: apiPhoto.url,
+      }))
+    } as User;
+  }
 }

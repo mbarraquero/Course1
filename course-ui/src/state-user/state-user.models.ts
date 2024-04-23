@@ -18,3 +18,11 @@ export interface Photo {
   id: number;
   url: string;
 }
+
+export interface UserUpdate {
+  introduction: string;
+  lookingFor: string;
+  interests: string;
+  city: string;
+  country: string;
+}

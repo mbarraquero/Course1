@@ -18,12 +18,12 @@ export class ErrorService {
     if (httpError) {
       switch (httpError.status) {
         case 400:
-          if (httpError.error.errors) {
+          if (httpError.error?.errors) {
             Object.values(httpError.error.errors).flat().forEach((errorI) => {
               this.toastr.error(errorI as string, httpError.status.toString())
             });
           } else {
-            this.toastr.error(httpError.error, httpError.status.toString());
+            this.toastr.error(httpError.error || (httpError as any).title, httpError.status.toString());
           }
           break;
         case 401:

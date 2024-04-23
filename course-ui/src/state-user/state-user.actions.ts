@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 
-import { User } from './state-user.models';
+import { User, UserUpdate } from './state-user.models';
 
 function prependLabel(actionName: string, type?: 'api' | 'page') {
   const typeLabel = type === 'api' ? '/API' : !!type ? '/Page' : '';
@@ -27,5 +27,18 @@ export const loadUserSuccess = createAction(
 );
 export const loadUserFailure = createAction(
   prependLabel('Load User Failure', 'api'),
+  props<{ error: any }>()
+);
+
+export const updateUser = createAction(
+  prependLabel('Update User', 'page'),
+  props<{ userUpdate: UserUpdate }>()
+);
+export const updateUserSuccess = createAction(
+  prependLabel('Update User Success', 'api'),
+  props<{ user: User }>()
+);
+export const updateUserFailure = createAction(
+  prependLabel('Update User Failure', 'api'),
   props<{ error: any }>()
 );

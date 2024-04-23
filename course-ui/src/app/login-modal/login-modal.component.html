@@ -1,3 +1,4 @@
+<app-util-loader *ngIf="loading$ | async"></app-util-loader>
 <div class="modal-header">
   <h4 class="modal-title pull-left">Login</h4>
   <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="close()">
@@ -5,24 +6,21 @@
   </button>
 </div>
 <div class="modal-body">
-  <div *ngIf="loading$ | async; else userForm" class="spinner-border m-5" role="status"></div>
-  <ng-template #userForm>
-    <form [formGroup]="form" class="d-flex flex-column gap-2">
-      <input
-        formControlName="username"
-        class="form-control me-2"
-        type="text"
-        placeholder="User Name"
-      >
-      <input
-        formControlName="password"
-        class="form-control me-2"
-        type="password"
-        placeholder="Password"
-        (keyup.enter)="login()"
-      >
-    </form>
-  </ng-template>
+  <form [formGroup]="form" class="d-flex flex-column gap-2">
+    <input
+      formControlName="username"
+      class="form-control me-2"
+      type="text"
+      placeholder="User Name"
+    >
+    <input
+      formControlName="password"
+      class="form-control me-2"
+      type="password"
+      placeholder="Password"
+      (keyup.enter)="login()"
+    >
+  </form>
 </div>
 <div class="modal-footer">
   <button type="button" class="btn btn-default" (click)="close()">Close</button>

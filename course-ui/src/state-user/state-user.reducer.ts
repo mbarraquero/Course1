@@ -60,7 +60,22 @@ export const userReducer = createReducer(
     loading: state.loading - 1,
     selectedUser: user
   })),
-  on(UserActions.initFailure, (state, { error }) => ({
+  on(UserActions.loadUserFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(UserActions.updateUser, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.updateUserSuccess, (state, { user }) => ({
+    ...state,
+    loading: state.loading - 1,
+    selectedUser: user
+  })),
+  on(UserActions.updateUserFailure, (state, { error }) => ({
     ...state,
     loading: state.loading - 1,
     error,

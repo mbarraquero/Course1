@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
 import * as UserActions from './state-user.actions';
+import { UserUpdate } from './state-user.models';
 import * as UserSelectors from './state-user.selectors';
 
 @Injectable()
@@ -20,5 +21,9 @@ export class StateUserFacade {
 
   loadUser(userName: string) {
     this.store.dispatch(UserActions.loadUser({ userName }));
+  }
+
+  updateUser(userUpdate: UserUpdate) {
+    this.store.dispatch(UserActions.updateUser({ userUpdate }));
   }
 }
