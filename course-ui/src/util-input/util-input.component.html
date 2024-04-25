@@ -1,0 +1,12 @@
+<input
+  [formControl]="control"
+  class="form-control"
+  [ngClass]="{ 'is-invalid': control.touched && control.invalid }"
+  [type]="type"
+  [placeholder]="placeholder"
+>
+<ng-container *ngFor="let validation of validations">
+  <div class="invalid-feedback" *ngIf="control.errors?.[validation.error]">
+    {{ validation.message }}
+  </div>
+</ng-container>

@@ -10,15 +10,16 @@ export class UserSessionService {
   private readonly loadedSubj = new BehaviorSubject(false);
   private readonly loadingSubj = new BehaviorSubject(false);
   private readonly errorSubj = new BehaviorSubject<any>(undefined);
-  private readonly userNameSubj = new BehaviorSubject<string | undefined>(undefined);
-  private readonly userPhotoUrlSubj = new BehaviorSubject<string | undefined>(undefined);
+  private readonly userSubj = new BehaviorSubject<ApiUserDto | undefined>(undefined);
 
   readonly loaded$ = this.loadedSubj.asObservable();
   readonly loading$ = this.loadingSubj.asObservable();
   readonly error$ = this.errorSubj.asObservable();
-  readonly loggedIn$ = this.userNameSubj.asObservable().pipe(map((username) => !!username));
-  readonly userName$ = this.userNameSubj.asObservable();
-  readonly userPhotoUrl$ = this.userPhotoUrlSubj.asObservable();
+  private readonly user$ = this.userSubj.asObservable();
+  readonly loggedIn$ = this.user$.pipe(map((user) => !!user));
+  readonly userName$ = this.user$.pipe(map((user) => user?.username));
+  readonly userKnownAs$ = this.user$.pipe(map((user) => user?.knownAs));
+  readonly userPhotoUrl$ = this.user$.pipe(map((user) => user?.photoUrl));
   
   constructor(
     private readonly api: HttpUserSessionService,
@@ -27,20 +28,24 @@ export class UserSessionService {
 
   init() {
     this.loadingSubj.next(true);
-    const username = this.localStorage.get(LocalStorageKeys.username);
-    const userPhotoUrl = this.localStorage.get(LocalStorageKeys.userPhotoUrl);
+    const user = this.localStorage.getObj<ApiUserDto>(LocalStorageKeys.user);
     const token = this.localStorage.get(LocalStorageKeys.authToken);
-    if (username && token) {
-      this.userNameSubj.next(username);
-      this.userPhotoUrlSubj.next(userPhotoUrl ?? undefined);
-    }
+    if (user && token) this.userSubj.next(user);
     this.loadedSubj.next(true);
     this.loadingSubj.next(false);
   }
 
-  register(username: string, password: string) {
+  register(newUser: {
+    username: string;
+    knownAs: string;
+    gender: string;
+    dateOfBirth: string;
+    city: string;
+    country: string;
+    password: string;
+  }) {
     this.onLoginStart();
-    this.api.register({ username, password })
+    this.api.register(newUser)
       .subscribe({
         next: (user) => this.onLoginSuccess(user),
         error: (error) => this.onLoginError(error),
@@ -57,11 +62,9 @@ export class UserSessionService {
   }
 
   logout() {
-    this.localStorage.remove(LocalStorageKeys.username);
-    this.localStorage.remove(LocalStorageKeys.userPhotoUrl);
+    this.localStorage.remove(LocalStorageKeys.user);
     this.localStorage.remove(LocalStorageKeys.authToken);
-    this.userNameSubj.next(undefined);
-    this.userPhotoUrlSubj.next(undefined);
+    this.userSubj.next(undefined);
   }
 
   getToken() {
@@ -69,8 +72,11 @@ export class UserSessionService {
   }
 
   onUserPhotoUrlUpdated(userPhotoUrl: string) {
-    this.localStorage.save(LocalStorageKeys.userPhotoUrl, userPhotoUrl);
-    this.userPhotoUrlSubj.next(userPhotoUrl);
+    const user = this.localStorage.getObj<ApiUserDto>(LocalStorageKeys.user);
+    if (!user) return;
+    user.photoUrl = userPhotoUrl;
+    this.localStorage.saveObj(LocalStorageKeys.user, user);
+    this.userSubj.next(user);
   }
 
   private onLoginStart() {
@@ -79,11 +85,10 @@ export class UserSessionService {
   }
 
   private onLoginSuccess(user: ApiUserDto) {
-    this.localStorage.save(LocalStorageKeys.username, user.username);
+    this.localStorage.saveObj(LocalStorageKeys.user, user);
     this.localStorage.save(LocalStorageKeys.authToken, user.token);
-    this.userNameSubj.next(user.username);
+    this.userSubj.next(user);
     this.loadingSubj.next(false);
-    this.onUserPhotoUrlUpdated(user.photoUrl);
   }
 
   private onLoginError(error: any) {

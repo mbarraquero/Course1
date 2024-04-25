@@ -34,28 +34,36 @@
     </div>
   </div>
   <div class="col-8">
+    <ng-template #blankSpace>
+      <p style="white-space:pre-wrap;">{{' '}}</p>
+    </ng-template>
     <tabset>
       <tab heading="About {{ member.knownAs }}">
         <div class="m-3">
           <h4>Description</h4>
-          <p>{{ member.introduction }}</p>
+          <p *ngIf="member.introduction; else blankSpace">{{ member.introduction }}</p>
           <h4>Looking For</h4>
-          <p>{{ member.lookingFor }}</p>
+          <p *ngIf="member.lookingFor; else blankSpace">{{ member.lookingFor }}</p>
         </div>
       </tab>
       <tab heading="Interests">
         <div class="m-3">
           <h4>Interests</h4>
-          <p>{{ member.interests }}</p>
+          <p *ngIf="member.interests; else blankSpace">{{ member.interests }}</p>
         </div>
       </tab>
       <tab heading="Photos" #photoTab="tab">
-        <app-util-gallery
-          *ngIf="photoTab.active"
-          [imageUrls]="photoUrls$ | async"
-          class="m-3"
-        >
-        </app-util-gallery>
+        <ng-container *ngIf="(photoUrls$ | async)?.length; else noPhotos">
+          <app-util-gallery
+            *ngIf="photoTab.active"
+            [imageUrls]="photoUrls$ | async"
+            class="m-3"
+          >
+          </app-util-gallery>
+        </ng-container>
+        <ng-template #noPhotos>
+          <p class="m-3">{{ member.knownAs }} has no photos to display at the moment</p>
+        </ng-template>
       </tab>
       <tab heading="Messages">
         TBD

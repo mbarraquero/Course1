@@ -2,7 +2,11 @@
   <div *ngFor="let member of members$ | async">
     <div class="member-card card">
       <div class="card-image-wrapper position-relative">
-        <img [src]="member.photoUrl" class="card-image card-img-top rounded" [alt]="member.userName">
+        <img
+          [src]="member.photoUrl || 'assets/default-member-photo.png'"
+          class="card-image card-img-top rounded"
+          [alt]="member.knownAs"
+        >
         <div class="image-options position-absolute d-flex justify-content-center gap-2 w-100">
           <button class="btn btn-primary" routerLink="/members/{{member.userName}}">
             <i class="fa fa-user"></i>

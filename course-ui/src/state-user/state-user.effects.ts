@@ -11,7 +11,7 @@ import { ApiMemberDto } from './api/http-user.models';
 import { HttpUserService } from './api/http-user.service';
 
 import * as UserActions from './state-user.actions';
-import { User } from './state-user.models';
+import { Photo, User } from './state-user.models';
 import { UserPartialState } from './state-user.reducer';
 import * as UserSelectors from './state-user.selectors';
 
@@ -80,6 +80,19 @@ export class UserEffects {
     )
   );
 
+  photoAdded$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.photoAdded),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getSelectedUser))
+      ),
+      switchMap(([{ photo }, user]) => {
+        if (photo.isMain) return [this.onMainPhotoUpdated(photo, user)];
+        else return [];
+      })
+    )
+  );
+
   setMainPhoto$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.setMainPhoto),
@@ -88,15 +101,7 @@ export class UserEffects {
       ),
       switchMap(([{ photo }, user]) =>
         this.api.setMainPhoto(photo.id).pipe(
-          map(() => {
-            const photoUrl = photo.url;
-            const photos = user?.photos.map((currentPhoto) => ({
-              ...currentPhoto,
-              isMain: currentPhoto.id === photo.id,
-            })) ?? [];
-            this.sessionService.onUserPhotoUrlUpdated(photoUrl);
-            return UserActions.setMainPhotoSuccess({ photoUrl, photos });
-          }),
+          map(() => this.onMainPhotoUpdated(photo, user)),
           catchError((error) => of(UserActions.setMainPhotoFailure({
             error: this.errorService.getErrorMessage(error)
           })))
@@ -104,6 +109,16 @@ export class UserEffects {
       )
     )
   );
+
+  private onMainPhotoUpdated(photo: Photo, user?: User) {
+    const photoUrl = photo.url;
+    const photos = user?.photos.map((currentPhoto) => ({
+      ...currentPhoto,
+      isMain: currentPhoto.id === photo.id,
+    })) ?? [];
+    this.sessionService.onUserPhotoUrlUpdated(photoUrl);
+    return UserActions.setMainPhotoSuccess({ photoUrl, photos });
+  }
 
   deletePhoto$ = createEffect(() =>
     this.actions$.pipe(

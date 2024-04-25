@@ -14,7 +14,7 @@ import { LoginModalComponent } from '../login-modal/login-modal.component';
 })
 export class NavBarComponent {
   readonly loggedIn$ = this.userSessionService.loggedIn$;
-  readonly username$ = this.userSessionService.userName$;
+  readonly userKnownAs$ = this.userSessionService.userKnownAs$;
   readonly userPhotoUrl$ = this.userSessionService.userPhotoUrl$;
 
   constructor(

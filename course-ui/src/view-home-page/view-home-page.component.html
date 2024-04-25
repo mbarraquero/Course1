@@ -2,23 +2,77 @@
   <ng-container *ngIf="showRegisterForm; else welcome">
     <div class="d-flex justify-content-center">
       <div class="register-form card p-3">
-        <div class="class-body">
+        <div class="card-body">
           <h2 class="text-center text-primary">Sign Up!</h2>
           <hr>
           <form [formGroup]="registerForm" class="d-flex flex-column gap-2">
-            <input
-              formControlName="username"
-              class="form-control me-2"
-              type="text"
+            <div class="d-flex gap-3">
+              <label>I am a: </label>
+              <label class="form-check-label">
+                <input type="radio" class="form-check-input" value="male" formControlName="gender">
+                Male
+              </label>
+              <label class="form-check-label">
+                <input type="radio" class="form-check-input" value="female" formControlName="gender">
+                Female
+              </label>
+            </div>
+            <app-util-input
+              [formControl]="registerForm.controls['username']"
               placeholder="User Name"
-            >
-            <input
-              formControlName="password"
-              class="form-control me-2"
-              type="password"
+              [validations]="[
+                { error: 'required', message: 'Please enter a user name' },
+              ]"
+            ></app-util-input>
+            <app-util-input
+              [formControl]="registerForm.controls['knownAs']"
+              placeholder="Known As"
+              [validations]="[
+                { error: 'required', message: 'Please enter a nickname' },
+              ]"
+            ></app-util-input>
+            <app-util-date-picker
+              [formControl]="registerForm.controls['dateOfBirth']"
+              placeholder="Date of Birth"
+              [maxDate]="todayMinus18Yr"
+              [validations]="[
+                { error: 'required', message: 'Please enter a date' },
+              ]"
+            ></app-util-date-picker>
+            <app-util-input
+              [formControl]="registerForm.controls['city']"
+              placeholder="City"
+              [validations]="[
+                { error: 'required', message: 'Please enter a city' },
+              ]"
+            ></app-util-input>
+            <app-util-input
+              [formControl]="registerForm.controls['country']"
+              placeholder="Country"
+              [validations]="[
+                { error: 'required', message: 'Please enter a country' },
+              ]"
+            ></app-util-input>
+            <app-util-input
+              [formControl]="registerForm.controls['password']"
               placeholder="Password"
+              type="password"
+              [validations]="[
+                { error: 'required', message: 'Please enter a password' },
+                { error: 'minlength', message: 'Password must be at least 4 characters' },
+                { error: 'maxlength', message: 'Password must be at most 4 characters' },
+              ]"
+            ></app-util-input>
+            <app-util-input
+              [formControl]="registerForm.controls['confirmPassword']"
+              placeholder="Confirm Password"
+              type="password"
+              [validations]="[
+                { error: 'required', message: 'Please confirm the password' },
+                { error: 'notmatching', message: 'Confirm password must match password' },
+              ]"
               (keyup.enter)="register()"
-            >
+            ></app-util-input>
           </form>
           <hr>
           <div class="d-flex gap-2">

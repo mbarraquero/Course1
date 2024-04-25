@@ -106,7 +106,7 @@
         <div class="row m-3">
           <div>
             <button class="btn btn-primary" (click)="openPhotoUploadDialog()">
-              <i class="fa fa-upload"></i> Upload more...
+              <i class="fa fa-upload"></i> {{ member?.photos?.length ? 'Upload more...' : 'Upload a photo' }}
             </button>
           </div>
         </div>

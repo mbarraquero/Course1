@@ -1,0 +1,15 @@
+<input
+  [formControl]="control"
+  class="form-control"
+  [ngClass]="{ 'is-invalid': control.touched && control.invalid }"
+  type="text"
+  [placeholder]="placeholder"
+  bsDatepicker
+  [bsConfig]="bsConfig"
+  [maxDate]="maxDate"
+>
+<ng-container *ngFor="let validation of validations">
+  <div class="invalid-feedback" *ngIf="control.errors?.[validation.error]">
+    {{ validation.message }}
+  </div>
+</ng-container>
