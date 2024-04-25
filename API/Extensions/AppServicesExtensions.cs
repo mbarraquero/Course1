@@ -9,6 +9,7 @@ public static class AppServicesExtensions
     {
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPhotoService, PhotoService>();
         return services;
     }
 }

@@ -11,4 +11,5 @@ export interface ApiRegisterDto {
 export interface ApiUserDto {
   username: string;
   token: string;
+  photoUrl: string;
 }

@@ -21,6 +21,11 @@
           class="btn btn-primary dropdown-toggle"
           aria-controls="dropdown-user-session"
         >
+          <img
+            [src]="(userPhotoUrl$ | async) || 'assets/default-member-photo.png'"
+            alt="User photo"
+            class="profile-pic rounded-circle me-2"
+          >
           Welcome {{ username$ | async }}
           <span class="caret"></span>
         </button>

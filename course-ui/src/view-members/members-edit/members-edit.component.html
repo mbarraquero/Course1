@@ -78,7 +78,38 @@
         </form>
       </tab>
       <tab heading="Edit Photos">
-        TBD
+        <div class="row m-3">
+          <div class="col-2" *ngFor="let photo of member.photos">
+            <div class="card">
+              <img src="{{ photo.url }}" class="card-img-top img-thumbnail" alt="Photo from {{ member.knownAs }}">
+              <div class="card-body text-center row">
+                <button
+                  class="btn btn-sm col-8"
+                  [ngClass]="photo.isMain ? 'btn-success active' : 'btn-outline-success'"
+                  [disabled]="photo.isMain"
+                  (click)="setMainPhoto(photo)"
+                >
+                  Main
+                  <i *ngIf="photo.isMain" class="fa fa-check"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-danger col-4"
+                  [disabled]="photo.isMain"
+                  (click)="deletePhoto(photo)"
+                >
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row m-3">
+          <div>
+            <button class="btn btn-primary" (click)="openPhotoUploadDialog()">
+              <i class="fa fa-upload"></i> Upload more...
+            </button>
+          </div>
+        </div>
       </tab>
     </tabset>
   </div>

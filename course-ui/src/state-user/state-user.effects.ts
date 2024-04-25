@@ -1,9 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+import { select, Store } from '@ngrx/store';
+import { catchError, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
+
 import { ErrorService } from 'src/error';
+import { UserSessionService } from 'src/user-session';
 
 import { ApiMemberDto } from './api/http-user.models';
 import { HttpUserService } from './api/http-user.service';
@@ -64,7 +66,7 @@ export class UserEffects {
           interests: userUpdate.interests,
           city: userUpdate.city,
           country: userUpdate.country,
-        }
+        };
         // just in case this entity changes in the future, otherwise we could use the id to select from the loaded list
         return this.api.updateUser(apiUserUpdate).pipe(
           map((apiUser) => UserActions.updateUserSuccess({
@@ -78,6 +80,53 @@ export class UserEffects {
     )
   );
 
+  setMainPhoto$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.setMainPhoto),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getSelectedUser))
+      ),
+      switchMap(([{ photo }, user]) =>
+        this.api.setMainPhoto(photo.id).pipe(
+          map(() => {
+            const photoUrl = photo.url;
+            const photos = user?.photos.map((currentPhoto) => ({
+              ...currentPhoto,
+              isMain: currentPhoto.id === photo.id,
+            })) ?? [];
+            this.sessionService.onUserPhotoUrlUpdated(photoUrl);
+            return UserActions.setMainPhotoSuccess({ photoUrl, photos });
+          }),
+          catchError((error) => of(UserActions.setMainPhotoFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        )
+      )
+    )
+  );
+
+  deletePhoto$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.deletePhoto),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getSelectedUser))
+      ),
+      switchMap(([{ photo }, user]) =>
+        this.api.deletePhoto(photo.id).pipe(
+          map(() => {
+            const photos = user?.photos.filter((currentPhoto) =>
+              currentPhoto.id !== photo.id
+            ) ?? [];
+            return UserActions.deletePhotoSuccess({ photos });
+          }),
+          catchError((error) => of(UserActions.deletePhotoFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        )
+      )
+    )
+  );
+
   genericError$ = createEffect(
     () =>
       this.actions$.pipe(
@@ -85,6 +134,8 @@ export class UserEffects {
           UserActions.initFailure,
           UserActions.loadUserFailure,
           UserActions.updateUserFailure,
+          UserActions.setMainPhotoFailure,
+          UserActions.deletePhotoFailure,
           // drop here errors to be generically handled
         ),
         tap(({ error }) => this.errorService.handleError(error as HttpErrorResponse))
@@ -97,6 +148,7 @@ export class UserEffects {
     private readonly store: Store<UserPartialState>,
     private readonly api: HttpUserService,
     private readonly errorService: ErrorService,
+    private readonly sessionService: UserSessionService,
   ) {}
 
   private toUser(apiUser: ApiMemberDto) {
@@ -116,6 +168,7 @@ export class UserEffects {
       photos: apiUser.photos.map((apiPhoto) => ({
         id: apiPhoto.id,
         url: apiPhoto.url,
+        isMain: apiPhoto.isMain,
       }))
     } as User;
   }

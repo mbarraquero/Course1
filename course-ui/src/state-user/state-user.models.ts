@@ -17,6 +17,7 @@ export interface User {
 export interface Photo {
   id: number;
   url: string;
+  isMain: boolean;
 }
 
 export interface UserUpdate {

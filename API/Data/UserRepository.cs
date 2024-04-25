@@ -11,9 +11,11 @@ public interface IUserRepository
     Task<AppUser> GetUserByUsernameAsync(string username);
     Task<MemberDto> GetMemberByUsernameAsync(string username);
     Task<IEnumerable<MemberDto>> GetMembersAsync();
-    Task<AppUser> AddUserAsync(AppUser user);
     Task<MemberDto> UpdateMemberAsync(AppUser user, MemberUpdateDto member);
-    Task<IEnumerable<AppUser>> UpdateUsersAsync(IEnumerable<AppUser> users);
+    Task<PhotoDto> AddPhotoAsync(AppUser user, string url, string publicId);
+    Photo GetPhotoById(AppUser user, int photoId);
+    Task<Photo> SetMainPhotoAsync(AppUser user, Photo newMainPhoto);
+    Task<Photo> DeletePhoto(AppUser user, Photo photo);
 }
 
 public class UserRepository : IUserRepository
@@ -61,29 +63,64 @@ public class UserRepository : IUserRepository
             .ToListAsync();
     }
 
-    // TODO rest of CRUD with automapper
-
-    public async Task<AppUser> AddUserAsync(AppUser user)
-    {
-        var savedUser = _context.Users.Add(user).Entity;
-        return await SaveAll(savedUser);
-    }
+    //public async Task<AppUser> AddUserAsync(AppUser user)
+    //{
+    //    var savedUser = _context.Users.Add(user).Entity;
+    //    return await SaveAll(savedUser);
+    //}
 
     public async Task<MemberDto> UpdateMemberAsync(AppUser user, MemberUpdateDto member)
     {
         var updatedUser = _mapper.Map(member, user);
-        return await SaveAll(_mapper.Map<MemberDto>(updatedUser));
+        return await SaveAll(updatedUser, (u) => _mapper.Map<MemberDto>(u));
     }
 
-    public async Task<IEnumerable<AppUser>> UpdateUsersAsync(IEnumerable<AppUser> users)
+    //public async Task<IEnumerable<AppUser>> UpdateUsersAsync(IEnumerable<AppUser> users)
+    //{
+    //    var updatedUsers = users.Select(user => _context.Update(user).Entity).ToList();
+    //    return await SaveAll(updatedUsers);
+    //}
+
+    public async Task<PhotoDto> AddPhotoAsync(AppUser user, string url, string publicId)
     {
-        var updatedUsers = users.Select(user => _context.Update(user).Entity).ToList();
-        return await SaveAll(updatedUsers);
+        var photo = new Photo
+        {
+            Url = url,
+            PublicId = publicId
+        };
+        if (user.Photos.Count == 0) photo.IsMain = true;
+        user.Photos.Add(photo);
+        return await SaveAll(photo, (p) => _mapper.Map<PhotoDto>(p));
+    }
+
+    public Photo GetPhotoById(AppUser user, int photoId)
+    {
+        return user.Photos.FirstOrDefault(x => x.Id == photoId);
+    }
+
+    public async Task<Photo> SetMainPhotoAsync(AppUser user, Photo newMainPhoto)
+    {
+        var currentMainPhoto = user.Photos.FirstOrDefault(x => x.IsMain);
+        if (currentMainPhoto != null) currentMainPhoto.IsMain = false;
+        newMainPhoto.IsMain = true;
+        return await SaveAll(newMainPhoto);
+    }
+
+    public async Task<Photo> DeletePhoto(AppUser user, Photo photo)
+    {
+        user.Photos.Remove(photo);
+        return await SaveAll(photo);
     }
 
     private async Task<T> SaveAll<T>(T entity) where T : new()
     {
         var updates = await _context.SaveChangesAsync();
         return updates > 0 ? entity : default;
+    }
+
+    private async Task<U> SaveAll<T, U>(T entity, Func<T, U> map) where T : new() where U : new()
+    {
+        var updates = await _context.SaveChangesAsync();
+        return updates > 0 ? map(entity) : default;
     }
 }

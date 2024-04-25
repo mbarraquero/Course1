@@ -80,4 +80,57 @@ export const userReducer = createReducer(
     loading: state.loading - 1,
     error,
   })),
+  on(UserActions.photoAdded, (state, { photo }) => ({
+    ...state,
+    selectedUser: state.selectedUser
+      ? {
+        ...state.selectedUser,
+        photos: [
+          ...state.selectedUser.photos,
+          photo
+        ],
+      }
+      : undefined
+  })),
+  on(UserActions.setMainPhoto, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.setMainPhotoSuccess, (state, { photoUrl, photos }) => ({
+    ...state,
+    loading: state.loading - 1,
+    selectedUser: state.selectedUser
+      ? {
+        ...state.selectedUser,
+        photoUrl,
+        photos,
+      }
+      : undefined,
+  })),
+  on(UserActions.setMainPhotoFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(UserActions.deletePhoto, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.deletePhotoSuccess, (state, { photos }) => ({
+    ...state,
+    loading: state.loading - 1,
+    selectedUser: state.selectedUser
+      ? {
+        ...state.selectedUser,
+        photos,
+      }
+      : undefined,
+  })),
+  on(UserActions.deletePhotoFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
 )

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
 import * as UserActions from './state-user.actions';
-import { UserUpdate } from './state-user.models';
+import { Photo, UserUpdate } from './state-user.models';
 import * as UserSelectors from './state-user.selectors';
 
 @Injectable()
@@ -25,5 +25,17 @@ export class StateUserFacade {
 
   updateUser(userUpdate: UserUpdate) {
     this.store.dispatch(UserActions.updateUser({ userUpdate }));
+  }
+
+  photoAdded(photo: Photo) {
+    this.store.dispatch(UserActions.photoAdded({ photo }));
+  }
+
+  setMainPhoto(photo: Photo) {
+    this.store.dispatch(UserActions.setMainPhoto({ photo }));
+  }
+
+  deletePhoto(photo: Photo) {
+    this.store.dispatch(UserActions.deletePhoto({ photo }));
   }
 }

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 export const LocalStorageKeys = {
   authToken: 'auth-token',
   username: 'user-name',
+  userPhotoUrl: 'user-photo-url',
 };
 
 @Injectable()

@@ -48,7 +48,9 @@ public class AccountController : BaseApiController
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
-        var user = await _dataContext.Users.SingleOrDefaultAsync(user => user.UserName.ToLower() == loginDto.Username.ToLower());
+        var user = await _dataContext.Users
+            .Include(user => user.Photos)
+            .SingleOrDefaultAsync(user => user.UserName.ToLower() == loginDto.Username.ToLower());
         if (user == null) return Unauthorized("User does not exist");
 
         using var hmac = new HMACSHA512(user.PasswordSalt);
@@ -62,6 +64,7 @@ public class AccountController : BaseApiController
         {
             Username = user.UserName,
             Token = _tokenService.GetToken(user),
+            PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
         };
     }
 

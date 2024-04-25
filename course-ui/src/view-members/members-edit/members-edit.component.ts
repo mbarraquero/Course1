@@ -3,8 +3,9 @@ import { FormBuilder } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { first, Subject, take, takeUntil, withLatestFrom } from 'rxjs';
 
-import { StateUserFacade, User } from 'src/state-user';
+import { Photo, StateUserFacade, User } from 'src/state-user';
 import { UserSessionService } from 'src/user-session';
+import { UtilFileUploadService } from 'src/util-file-upload';
 
 @Component({
   selector: 'app-members-edit',
@@ -26,6 +27,7 @@ export class MembersEditComponent implements OnInit, OnDestroy {
     private readonly userFacade: StateUserFacade,
     private readonly sessionService: UserSessionService,
     private readonly toastr: ToastrService,
+    private readonly fileUploadService: UtilFileUploadService,
     private readonly formBuilder: FormBuilder,
   ) { }
 
@@ -67,6 +69,22 @@ export class MembersEditComponent implements OnInit, OnDestroy {
           this.toastr.success('Profile updated successfully');
         }
       })
+  }
+
+  setMainPhoto(photo: Photo) {
+    if (photo.isMain) return;
+    this.userFacade.setMainPhoto(photo);
+  }
+
+  deletePhoto(photo: Photo) {
+    if (photo.isMain) return;
+    this.userFacade.deletePhoto(photo);
+  }
+
+  openPhotoUploadDialog() {
+    this.fileUploadService.openModal$()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((newPhoto) => this.userFacade.photoAdded(newPhoto));
   }
 
   private getNewAboutForm() {

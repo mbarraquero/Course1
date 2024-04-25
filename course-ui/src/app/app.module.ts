@@ -13,6 +13,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { ErrorService } from 'src/error';
 import { StateUserModule } from 'src/state-user';
 import { UserSessionModule } from 'src/user-session';
+import { UtilFileUploadModule } from 'src/util-file-upload';
 import { UtilLoaderComponent } from 'src/util-loader';
 
 import { AppComponent } from './app.component';
@@ -41,6 +42,7 @@ import { AppRoutingModule } from './routing/app-routing.module';
     }),
     StateUserModule,
     UserSessionModule,
+    UtilFileUploadModule,
     UtilLoaderComponent,
     AppRoutingModule,
   ],

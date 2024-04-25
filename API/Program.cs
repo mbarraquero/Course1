@@ -1,5 +1,6 @@
 using API.Data;
 using API.Extensions;
+using API.Helpers;
 using API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,8 @@ builder.Services.AddSecurityConfig(builder.Configuration);
 builder.Services.AddServices();
 // Automapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+// Cloudinary
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 var app = builder.Build();
 

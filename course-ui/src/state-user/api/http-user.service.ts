@@ -30,4 +30,14 @@ export class HttpUserService {
     return this.http.put<ApiMemberDto>(requestUrl, userUpdate)
       .pipe(map((response) => response));
   }
+
+  setMainPhoto(photoId: number) {
+    const requestUrl = this.apiUrl + 'Users/set-main-photo/' + photoId;
+    return this.http.put<void>(requestUrl, {});
+  }
+
+  deletePhoto(photoId: number) {
+    const requestUrl = this.apiUrl + 'Users/delete-photo/' + photoId;
+    return this.http.delete<void>(requestUrl);
+  }
 }
