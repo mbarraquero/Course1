@@ -1,3 +1,5 @@
+import { ApiPageParams } from 'src/pagination';
+
 export interface ApiMemberDto
 {
   id: number;
@@ -29,3 +31,22 @@ export interface ApiMemberUpdateDto {
   city: string;
   country: string;
 }
+
+export type ApiUserOrderBy = 'created' | 'lastActive';
+
+export interface GetUsersParams {
+  gender?: string;
+  minAge?: number;
+  maxAge?: number;
+  pageNumber: number;
+  pageSize: number;
+  orderBy?: ApiUserOrderBy;
+}
+
+export interface ApiUserParams extends ApiPageParams {
+  // currentUsername: string; // unused
+  gender?: string;
+  minAge?: number;
+  maxAge?: number;
+  orderBy?: ApiUserOrderBy;
+};

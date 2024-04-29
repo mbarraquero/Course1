@@ -1,5 +1,6 @@
 ﻿using API.DTOs;
 using API.Entities;
+using API.Helpers;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +9,11 @@ namespace API.Data;
 
 public interface IUserRepository
 {
+    Task<AppUser> GetUserByIdNoPhotosAsync(int id);
     Task<AppUser> GetUserByUsernameAsync(string username);
     Task<MemberDto> GetMemberByUsernameAsync(string username);
-    Task<IEnumerable<MemberDto>> GetMembersAsync();
+    Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
+    Task<AppUser> UpdateUserAsync(AppUser user);
     Task<MemberDto> UpdateMemberAsync(AppUser user, MemberUpdateDto member);
     Task<PhotoDto> AddPhotoAsync(AppUser user, string url, string publicId);
     Photo GetPhotoById(AppUser user, int photoId);
@@ -29,10 +32,10 @@ public class UserRepository : IUserRepository
         _mapper = mapper;
     }
 
-    //public async Task<AppUser> GetUserByIdAsync(int id)
-    //{
-    //    return await _context.Users.FindAsync(id);
-    //}
+    public async Task<AppUser> GetUserByIdNoPhotosAsync(int id)
+    {
+        return await _context.Users.FindAsync(id);
+    }
 
     public async Task<AppUser> GetUserByUsernameAsync(string username)
     {
@@ -56,11 +59,29 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<MemberDto>> GetMembersAsync()
+    public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
     {
-        return await _context.Users
-            .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
-            .ToListAsync();
+        var minDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MaxAge - 1));
+        var maxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge));
+
+        var query = _context.Users.AsQueryable()
+            .Where(u => u.UserName != userParams.CurrentUsername)
+            .Where(u => u.Gender == userParams.Gender)
+            .Where(u => u.DateOfBirth >= minDob && u.DateOfBirth < maxDob);
+
+        query = userParams.OrderBy switch
+        {
+            "created" => query.OrderByDescending(u => u.Created),
+            "lastActive" => query.OrderByDescending(u => u.LastActive),
+            _ => query.OrderByDescending(u => u.LastActive),
+        };
+
+        return await PagedList<MemberDto>.CreateAsync
+        (
+            query.AsNoTracking().ProjectTo<MemberDto>(_mapper.ConfigurationProvider),
+            userParams.PageNumber,
+            userParams.PageSize
+        );
     }
 
     //public async Task<AppUser> AddUserAsync(AppUser user)
@@ -68,6 +89,11 @@ public class UserRepository : IUserRepository
     //    var savedUser = _context.Users.Add(user).Entity;
     //    return await SaveAll(savedUser);
     //}
+
+    public async Task<AppUser> UpdateUserAsync(AppUser user)
+    {
+        return await SaveAll(_context.Update(user).Entity);
+    }
 
     public async Task<MemberDto> UpdateMemberAsync(AppUser user, MemberUpdateDto member)
     {

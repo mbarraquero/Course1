@@ -6,6 +6,7 @@ import { first, withLatestFrom } from 'rxjs';
 
 import { ErrorService } from 'src/error/error.service';
 import { UserSessionService } from 'src/user-session';
+import { getTodayMinusYrs, removeTZ } from 'src/util-helpers';
 import { UtilValidators } from 'src/util-validators';
 
 @Component({
@@ -17,17 +18,14 @@ export class ViewHomePageComponent {
   readonly loading$ = this.userSessionService.loading$;
   registerForm = this.getRegisterForm();
   showRegisterForm = false;
-  todayMinus18Yr: Date;
+  readonly todayMinus18Yr = getTodayMinusYrs(18);
 
   constructor(
     private readonly userSessionService: UserSessionService,
     private readonly errorService: ErrorService,
     private readonly router: Router,
     private readonly formBuilder: FormBuilder,
-  ) {
-    this.todayMinus18Yr = new Date();
-    this.todayMinus18Yr.setFullYear(this.todayMinus18Yr.getFullYear() - 18);
-  }
+  ) {}
 
   register() {
     if (this.registerForm.invalid) return;
@@ -35,7 +33,7 @@ export class ViewHomePageComponent {
       username: this.registerForm.get('username')?.value as string,
       knownAs: this.registerForm.get('knownAs')?.value as string,
       gender: this.registerForm.get('gender')?.value as string,
-      dateOfBirth: this.removeTZ(this.registerForm.get('dateOfBirth')?.value ?? undefined) as string,
+      dateOfBirth: removeTZ(this.registerForm.get('dateOfBirth')?.value ?? undefined) as string,
       city: this.registerForm.get('city')?.value as string,
       country: this.registerForm.get('country')?.value as string,
       password: this.registerForm.get('password')?.value as string,
@@ -72,13 +70,5 @@ export class ViewHomePageComponent {
       },
     );
     return registerForm;
-  }
-
-  private removeTZ(dateStr?: string) {
-    if (!dateStr) return dateStr;
-    const date = new Date(dateStr);
-    return new Date(date.setMinutes(date.getMinutes() - date.getTimezoneOffset()))
-      .toISOString()
-      .slice(0, 10);
   }
 }

@@ -1,15 +1,31 @@
 import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import { createReducer, on } from '@ngrx/store';
 
+import { Pagination } from 'src/pagination';
+
 import * as UserActions from './state-user.actions';
-import { User } from './state-user.models';
+import { User, UserOrderBy, UsersFilters } from './state-user.models';
 
 export const userFeatureKey = 'user';
+
+export const defaultPagination = {
+  currentPage: 1,
+  itemsPerPage: 5,
+  totalItems: 0,
+  totalPages: 0,
+};
+export const getDefaultGender = (gender: string) => gender === 'male' ? 'female' : 'male'; // not fully compliant with 2018, I know...
+export const defaultMinAge = 18;
+export const defaultMaxAge = 99;
+export const defaultOrderBy = 'lastActive' as UserOrderBy;
 
 export interface State extends EntityState<User> {
   loaded: boolean;
   loading: number;
   error?: any;
+  pagination: Pagination;
+  filters: UsersFilters;
+  defaultFilters?: UsersFilters;
   selectedUser?: User;
 };
 
@@ -25,6 +41,8 @@ export const userAdapter: EntityAdapter<User> =
 export const initialState: State = userAdapter.getInitialState({
   loaded: false,
   loading: 0,
+  pagination: defaultPagination,
+  filters: {},
 });
 
 export const userReducer = createReducer(
@@ -35,16 +53,40 @@ export const userReducer = createReducer(
     loading: state.loading + 1,
     error: undefined,
   })),
-  on(UserActions.initSuccess, (state, { users }) =>
+  on(UserActions.goToUsersPage, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.setFilters, (state, { filters }) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+    filters,
+  })),
+  on(UserActions.resetFilters, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+    filters: state.defaultFilters ?? {},
+  })),
+  on(UserActions.setDefaultFilters, (state, { defaultFilters }) => ({
+    ...state,
+    filters: defaultFilters,
+    defaultFilters,
+  })),
+  on(UserActions.loadPagedUsersSuccess, (state, { users, pagination }) =>
     userAdapter.setAll(
       users,
       {
         ...state,
+        loaded: true,
         loading: state.loading - 1,
+        pagination
       }
     ) 
   ),
-  on(UserActions.initFailure, (state, { error }) => ({
+  on(UserActions.loadPagedUsersFailure, (state, { error }) => ({
     ...state,
     loading: state.loading - 1,
     error,

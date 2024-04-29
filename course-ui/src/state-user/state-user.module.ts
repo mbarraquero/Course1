@@ -3,6 +3,8 @@ import { NgModule } from '@angular/core';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
+import { PaginationService } from 'src/pagination';
+
 import { HttpUserService } from './api/http-user.service';
 
 import { UserEffects } from './state-user.effects';
@@ -16,6 +18,7 @@ import { userFeatureKey, userReducer } from './state-user.reducer';
     EffectsModule.forFeature([UserEffects]),
   ],
   providers: [
+    PaginationService,
     HttpUserService,
     StateUserFacade,
   ]

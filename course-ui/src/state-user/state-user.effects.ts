@@ -12,7 +12,14 @@ import { HttpUserService } from './api/http-user.service';
 
 import * as UserActions from './state-user.actions';
 import { Photo, User } from './state-user.models';
-import { UserPartialState } from './state-user.reducer';
+import {
+  UserPartialState,
+  defaultMaxAge,
+  defaultMinAge,
+  defaultOrderBy,
+  defaultPagination,
+  getDefaultGender
+} from './state-user.reducer';
 import * as UserSelectors from './state-user.selectors';
 
 @Injectable()
@@ -20,18 +27,102 @@ export class UserEffects {
   init$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.init),
-      switchMap(() =>
-        this.api.getUsers().pipe(
-          map((apiUsers) => UserActions.initSuccess({
-            users: apiUsers.map((apiUser) => ({
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getPagination)),
+        this.sessionService.userGender$,
+      ),
+      switchMap(([_, pagination, gender]) => {
+        const defaultFilters = {
+          gender: getDefaultGender(gender ?? ''),
+          minAge: defaultMinAge,
+          maxAge: defaultMaxAge,
+          orderBy: defaultOrderBy,
+        };
+        return [
+          UserActions.loadPagedUsers({
+            pageNumber: pagination.currentPage,
+            pageSize: pagination.itemsPerPage,
+            filters: defaultFilters,
+          }),
+          UserActions.setDefaultFilters({ defaultFilters }),
+        ]
+      })
+    )
+  );
+
+  goToUsersPage$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.goToUsersPage),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getPagination)),
+        this.store.pipe(select(UserSelectors.getFilters))
+      ),
+      map(([{ pageNumber }, pagination, filters]) =>
+        UserActions.loadPagedUsers({
+          pageNumber,
+          pageSize: pagination.itemsPerPage,
+          filters,
+        })
+      )
+    )
+  );
+
+  setFilters$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.setFilters),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getPagination)),
+      ),
+      map(([{ filters }, pagination]) =>
+        UserActions.loadPagedUsers({
+          pageNumber: defaultPagination.currentPage,
+          pageSize: pagination.itemsPerPage,
+          filters,
+        })
+      )
+    )
+  );
+
+  resetFilters$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.resetFilters),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getPagination)),
+        this.store.pipe(select(UserSelectors.getDefaultFilters)),
+      ),
+      map(([_, pagination, defaultFilters]) =>
+        UserActions.loadPagedUsers({
+          pageNumber: defaultPagination.currentPage,
+          pageSize: pagination.itemsPerPage,
+          filters: defaultFilters ?? {},
+        })
+      )
+    )
+  );
+
+  loadPagedUsers$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.loadPagedUsers),
+      switchMap(({ pageNumber, pageSize, filters }) =>
+        this.api.getUsers({
+          pageNumber,
+          pageSize,
+          gender: filters.gender,
+          minAge: filters.minAge,
+          maxAge: filters.maxAge,
+          orderBy: filters.orderBy,
+        }).pipe(
+          map(({ result, pagination }) => UserActions.loadPagedUsersSuccess({
+            users: result.map((apiUser) => ({
               id: apiUser.id,
               userName: apiUser.userName,
               knownAs: apiUser.knownAs,
               photoUrl: apiUser.photoUrl,
               city: apiUser.city,
-            } as User))
+            } as User)),
+            pagination,
           })),
-          catchError((error) => of(UserActions.initFailure({
+          catchError((error) => of(UserActions.loadPagedUsersFailure({
             error: this.errorService.getErrorMessage(error)
           })))
         )
@@ -43,7 +134,6 @@ export class UserEffects {
     this.actions$.pipe(
       ofType(UserActions.loadUser),
       switchMap(({ userName }) =>
-        // just in case this entity changes in the future, otherwise we could use the id to select from the loaded list
         this.api.getUserByName(userName).pipe(
           map((apiUser) => UserActions.loadUserSuccess({
             user: this.toUser(apiUser)
@@ -67,7 +157,6 @@ export class UserEffects {
           city: userUpdate.city,
           country: userUpdate.country,
         };
-        // just in case this entity changes in the future, otherwise we could use the id to select from the loaded list
         return this.api.updateUser(apiUserUpdate).pipe(
           map((apiUser) => UserActions.updateUserSuccess({
             user: this.toUser(apiUser)
@@ -146,7 +235,7 @@ export class UserEffects {
     () =>
       this.actions$.pipe(
         ofType(
-          UserActions.initFailure,
+          UserActions.loadPagedUsersFailure,
           UserActions.loadUserFailure,
           UserActions.updateUserFailure,
           UserActions.setMainPhotoFailure,

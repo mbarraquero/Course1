@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
 import * as UserActions from './state-user.actions';
-import { Photo, UserUpdate } from './state-user.models';
+import { Photo, UsersFilters, UserUpdate } from './state-user.models';
 import * as UserSelectors from './state-user.selectors';
 
 @Injectable()
@@ -10,6 +10,8 @@ export class StateUserFacade {
   loaded$ = this.store.pipe(select(UserSelectors.getLoaded));
   loading$ = this.store.pipe(select(UserSelectors.getLoading));
   error$ = this.store.pipe(select(UserSelectors.getError));
+  pagination$ = this.store.pipe(select(UserSelectors.getPagination));
+  filters$ = this.store.pipe(select(UserSelectors.getFilters));
   allUsers$ = this.store.pipe(select(UserSelectors.getAllUsers));
   selectedUser$ = this.store.pipe(select(UserSelectors.getSelectedUser));
 
@@ -17,6 +19,18 @@ export class StateUserFacade {
 
   init() {
     this.store.dispatch(UserActions.init());
+  }
+
+  goToUserPage(pageNumber: number) {
+    this.store.dispatch(UserActions.goToUsersPage({ pageNumber }));
+  }
+
+  setFilters(filters: UsersFilters) {
+    this.store.dispatch(UserActions.setFilters({ filters }));
+  }
+
+  resetFilters() {
+    this.store.dispatch(UserActions.resetFilters());
   }
 
   loadUser(userName: string) {

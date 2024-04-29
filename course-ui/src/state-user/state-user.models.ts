@@ -1,3 +1,6 @@
+import { ApiUserOrderBy } from './api/http-user.models';
+export { ApiUserOrderBy as UserOrderBy } from './api/http-user.models';
+
 export interface User {
   id: number;
   userName: string;
@@ -18,6 +21,13 @@ export interface Photo {
   id: number;
   url: string;
   isMain: boolean;
+}
+
+export interface UsersFilters {
+  gender?: string;
+  minAge?: number;
+  maxAge?: number;
+  orderBy?: ApiUserOrderBy;
 }
 
 export interface UserUpdate {

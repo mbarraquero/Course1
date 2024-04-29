@@ -20,6 +20,7 @@ export class UserSessionService {
   readonly userName$ = this.user$.pipe(map((user) => user?.username));
   readonly userKnownAs$ = this.user$.pipe(map((user) => user?.knownAs));
   readonly userPhotoUrl$ = this.user$.pipe(map((user) => user?.photoUrl));
+  readonly userGender$ = this.user$.pipe(map((user) => user?.gender));
   
   constructor(
     private readonly api: HttpUserSessionService,

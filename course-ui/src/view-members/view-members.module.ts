@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
+import { ButtonsModule } from 'ngx-bootstrap/buttons';
+import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
+import { TimeagoModule } from "ngx-timeago";
 
 import { UtilGalleryComponent } from 'src/util-gallery';
 import { UtilLoaderComponent } from 'src/util-loader';
@@ -45,9 +48,13 @@ const routes: Routes = [
   ],
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     RouterModule.forChild(routes),
+    ButtonsModule.forRoot(),
+    PaginationModule.forRoot(),
     TabsModule.forRoot(),
+    TimeagoModule.forRoot(),
     UtilGalleryComponent,
     UtilLoaderComponent,
   ]

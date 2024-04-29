@@ -26,6 +26,8 @@ builder.Services.AddServices();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Cloudinary
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+// Log last active date
+builder.Services.AddScoped<LogUserActivity>();
 
 var app = builder.Build();
 

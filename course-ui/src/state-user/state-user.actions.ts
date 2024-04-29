@@ -1,6 +1,8 @@
 import { createAction, props } from '@ngrx/store';
 
-import { Photo, User, UserUpdate } from './state-user.models';
+import { Pagination } from 'src/pagination';
+
+import { Photo, User, UserUpdate, UsersFilters } from './state-user.models';
 
 function prependLabel(actionName: string, type?: 'api' | 'page') {
   const typeLabel = type === 'api' ? '/API' : !!type ? '/Page' : '';
@@ -8,12 +10,30 @@ function prependLabel(actionName: string, type?: 'api' | 'page') {
 }
 
 export const init = createAction(prependLabel('Init', 'page'));
-export const initSuccess = createAction(
-  prependLabel('Init Success', 'api'),
-  props<{ users: User[] }>()
+export const goToUsersPage = createAction(
+  prependLabel('Go To Users Page', 'page'),
+  props<{ pageNumber: number; }>()
 );
-export const initFailure = createAction(
-  prependLabel('Init Failure', 'api'),
+export const setFilters = createAction(
+  prependLabel('Set Filters', 'page'),
+  props<{ filters: UsersFilters }>()
+);
+export const resetFilters = createAction(prependLabel('Reset Filters', 'page'));
+export const setDefaultFilters = createAction(
+  prependLabel('Set Default Filters'),
+  props<{ defaultFilters: UsersFilters }>()
+);
+
+export const loadPagedUsers = createAction(
+  prependLabel('Load Paged Users'),
+  props<{ pageNumber: number; pageSize: number; filters: UsersFilters }>()
+);
+export const loadPagedUsersSuccess = createAction(
+  prependLabel('Load Paged Users Success', 'api'),
+  props<{ users: User[]; pagination: Pagination; }>()
+);
+export const loadPagedUsersFailure = createAction(
+  prependLabel('Load Paged Users Failure', 'api'),
   props<{ error: any }>()
 );
 

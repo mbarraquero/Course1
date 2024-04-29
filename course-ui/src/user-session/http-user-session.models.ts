@@ -18,4 +18,5 @@ export interface ApiUserDto {
   knownAs: string;
   token: string;
   photoUrl: string;
+  gender: string;
 }
