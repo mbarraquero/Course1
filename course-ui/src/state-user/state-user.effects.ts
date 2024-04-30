@@ -7,7 +7,7 @@ import { catchError, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { ErrorService } from 'src/error';
 import { UserSessionService } from 'src/user-session';
 
-import { ApiMemberDto } from './api/http-user.models';
+import { ApiLikeDto, ApiMemberDto } from './api/http-user.models';
 import { HttpUserService } from './api/http-user.service';
 
 import * as UserActions from './state-user.actions';
@@ -209,6 +209,69 @@ export class UserEffects {
     return UserActions.setMainPhotoSuccess({ photoUrl, photos });
   }
 
+  loadUserLikes$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.loadUserLikes),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getLikesPagination)),
+      ),
+      map(([{ predicate }, { itemsPerPage }]) =>
+        UserActions.loadPagedUserLikes({
+          pageNumber: defaultPagination.currentPage,
+          pageSize: itemsPerPage,
+          predicate,
+        })
+      )
+    )
+  );
+
+  goToUserLikesPage$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.goToUserLikesPage),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getLikesPagination)),
+      ),
+      map(([{ pageNumber, predicate }, { itemsPerPage }]) =>
+        UserActions.loadPagedUserLikes({
+          pageNumber,
+          pageSize: itemsPerPage,
+          predicate,
+        })
+      )
+    )
+  );
+
+  loadPagedUserLikes$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.loadPagedUserLikes),
+      switchMap(({ pageNumber, pageSize, predicate }) =>
+        this.api.getLikesByPredicate(pageNumber, pageSize, predicate).pipe(
+          map(({ result, pagination }) => UserActions.loadPagedUserLikesSuccess({
+            likesUsers: result.map((apiLikeUser) => this.toLikeUser(apiLikeUser)),
+            likesPagination: pagination,
+          })),
+          catchError((error) => of(UserActions.loadPagedUserLikesFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        )
+      )
+    )
+  );
+
+  like$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.like),
+      switchMap(({ user }) =>
+        this.api.like(user.userName).pipe(
+          map(() => UserActions.likeSuccess()),
+          catchError((error) => of(UserActions.likeFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        )
+      )
+    )
+  );
+
   deletePhoto$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.deletePhoto),
@@ -240,6 +303,8 @@ export class UserEffects {
           UserActions.updateUserFailure,
           UserActions.setMainPhotoFailure,
           UserActions.deletePhotoFailure,
+          UserActions.loadPagedUserLikesFailure,
+          UserActions.likeFailure,
           // drop here errors to be generically handled
         ),
         tap(({ error }) => this.errorService.handleError(error as HttpErrorResponse))
@@ -274,6 +339,17 @@ export class UserEffects {
         url: apiPhoto.url,
         isMain: apiPhoto.isMain,
       }))
+    } as User;
+  }
+
+  private toLikeUser(apiLikeUser: ApiLikeDto) {
+    return {
+      id: apiLikeUser.id,
+      userName: apiLikeUser.userName,
+      photoUrl: apiLikeUser.photoUrl,
+      age: apiLikeUser.age,
+      knownAs: apiLikeUser.knownAs,
+      city: apiLikeUser.city,
     } as User;
   }
 }

@@ -6,7 +6,14 @@ import { environment } from 'src/environments/environment';
 import { PaginationService } from 'src/pagination';
 import { propertyOf } from 'src/util-helpers';
 
-import { ApiMemberDto, ApiMemberUpdateDto, ApiUserParams, GetUsersParams } from './http-user.models';
+import {
+  ApiLikeDto,
+  ApiLikesPredicate,
+  ApiMemberDto,
+  ApiMemberUpdateDto,
+  ApiUserParams,
+  GetUsersParams,
+} from './http-user.models';
 
 @Injectable()
 export class HttpUserService {
@@ -20,16 +27,16 @@ export class HttpUserService {
   getUsers(userParams: GetUsersParams) {
     const requestUrl = this.apiUrl + 'Users';
     let params = this.paginationService.getPaginationHeader(userParams.pageNumber, userParams.pageSize);
-    if (userParams.gender) params = params?.append(
+    if (userParams.gender) params = params.append(
       propertyOf<ApiUserParams>("gender"), userParams.gender
     );
-    if (userParams.minAge) params = params?.append(
+    if (userParams.minAge) params = params.append(
       propertyOf<ApiUserParams>("minAge"), userParams.minAge
     );
-    if (userParams.maxAge) params = params?.append(
+    if (userParams.maxAge) params = params.append(
       propertyOf<ApiUserParams>("maxAge"), userParams.maxAge
     );
-    if (userParams.orderBy) params = params?.append(
+    if (userParams.orderBy) params = params.append(
       propertyOf<ApiUserParams>("orderBy"), userParams.orderBy
     );
     return this.http.get<ApiMemberDto[]>(
@@ -43,14 +50,12 @@ export class HttpUserService {
 
   getUserByName(username: string) {
     const requestUrl = this.apiUrl + 'Users/' + username;
-    return this.http.get<ApiMemberDto>(requestUrl)
-      .pipe(map((response) => response));
+    return this.http.get<ApiMemberDto>(requestUrl);
   }
 
   updateUser(userUpdate: ApiMemberUpdateDto) {
     const requestUrl = this.apiUrl + 'Users';
-    return this.http.put<ApiMemberDto>(requestUrl, userUpdate)
-      .pipe(map((response) => response));
+    return this.http.put<ApiMemberDto>(requestUrl, userUpdate);
   }
 
   setMainPhoto(photoId: number) {
@@ -61,5 +66,23 @@ export class HttpUserService {
   deletePhoto(photoId: number) {
     const requestUrl = this.apiUrl + 'Users/delete-photo/' + photoId;
     return this.http.delete<void>(requestUrl);
+  }
+
+  like(username: string) {
+    const requestUrl = this.apiUrl + 'Likes/' + username;
+    return this.http.post<void>(requestUrl, {});
+  }
+
+  getLikesByPredicate(pageNumber: number, pageSize: number, predicate: ApiLikesPredicate) {
+    let params = this.paginationService.getPaginationHeader(pageNumber, pageSize)
+      .append('predicate', predicate);
+    const requestUrl = this.apiUrl + 'Likes';
+    return this.http.get<ApiLikeDto[]>(
+      requestUrl,
+      { params, observe: 'response' }
+    )
+    .pipe(map((response) =>
+      this.paginationService.getPaginatedResult(response)
+    ));
   }
 }

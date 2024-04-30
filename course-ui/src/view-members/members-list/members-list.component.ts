@@ -23,7 +23,7 @@ export class MembersListComponent implements OnInit, OnDestroy {
   readonly sortingOpt = [
     { value: 'lastActive' as UserOrderBy, display: 'Last Active' },
     { value: 'created' as UserOrderBy, display: 'Newest Member' }
-  ]
+  ];
   private readonly destroy$ = new Subject<void>();
 
   constructor(

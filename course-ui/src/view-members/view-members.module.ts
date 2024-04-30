@@ -9,6 +9,7 @@ import { TimeagoModule } from "ngx-timeago";
 
 import { UtilGalleryComponent } from 'src/util-gallery';
 import { UtilLoaderComponent } from 'src/util-loader';
+import { UtilMemberCardComponent } from 'src/util-member-card';
 
 import { unsavedChangesGuard } from './guards/unsaved-changes.guard';
 import { MembersDetailsComponent } from './members-details/members-details.component';
@@ -57,6 +58,7 @@ const routes: Routes = [
     TimeagoModule.forRoot(),
     UtilGalleryComponent,
     UtilLoaderComponent,
+    UtilMemberCardComponent,
   ]
 })
 export class ViewMembersModule { }

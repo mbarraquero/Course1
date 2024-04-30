@@ -50,3 +50,20 @@ export interface ApiUserParams extends ApiPageParams {
   maxAge?: number;
   orderBy?: ApiUserOrderBy;
 };
+
+export interface ApiLikeDto
+{
+  id: number;
+  userName: string;
+  photoUrl: string;
+  age: number;
+  knownAs: string;
+  city: string;
+}
+
+export type ApiLikesPredicate = 'liked' | 'likedBy';
+
+export interface ApiLikesParams extends ApiPageParams {
+  // userId: number; // unused
+  predicate: ApiLikesPredicate;
+};

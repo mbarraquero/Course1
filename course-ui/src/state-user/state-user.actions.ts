@@ -2,7 +2,7 @@ import { createAction, props } from '@ngrx/store';
 
 import { Pagination } from 'src/pagination';
 
-import { Photo, User, UserUpdate, UsersFilters } from './state-user.models';
+import { LikesPredicate, Photo, User, UserUpdate, UsersFilters } from './state-user.models';
 
 function prependLabel(actionName: string, type?: 'api' | 'page') {
   const typeLabel = type === 'api' ? '/API' : !!type ? '/Page' : '';
@@ -26,7 +26,7 @@ export const setDefaultFilters = createAction(
 
 export const loadPagedUsers = createAction(
   prependLabel('Load Paged Users'),
-  props<{ pageNumber: number; pageSize: number; filters: UsersFilters }>()
+  props<{ pageNumber: number; pageSize: number; filters: UsersFilters; }>()
 );
 export const loadPagedUsersSuccess = createAction(
   prependLabel('Load Paged Users Success', 'api'),
@@ -91,5 +91,36 @@ export const deletePhotoSuccess = createAction(
 );
 export const deletePhotoFailure = createAction(
   prependLabel('Delete Photo Failure', 'api'),
+  props<{ error: any }>()
+);
+
+export const loadUserLikes = createAction(
+  prependLabel('Load User Likes', 'page'),
+  props<{ predicate: LikesPredicate; }>()
+);
+export const goToUserLikesPage = createAction(
+  prependLabel('Go To User Likes Page', 'page'),
+  props<{ pageNumber: number; predicate: LikesPredicate; }>()
+);
+export const loadPagedUserLikes = createAction(
+  prependLabel('Load Paged User Likes'),
+  props<{ pageNumber: number; pageSize: number; predicate: LikesPredicate; }>()
+);
+export const loadPagedUserLikesSuccess = createAction(
+  prependLabel('Load Paged User Likes Success', 'api'),
+  props<{ likesUsers?: User[]; likesPagination: Pagination; }>()
+);
+export const loadPagedUserLikesFailure = createAction(
+  prependLabel('Load Paged User Likes Failure', 'api'),
+  props<{ error: any }>()
+);
+
+export const like = createAction(
+  prependLabel('Like', 'page'),
+  props<{ user: User }>()
+);
+export const likeSuccess = createAction(prependLabel('Like Success', 'api'));
+export const likeFailure = createAction(
+  prependLabel('Like Failure', 'api'),
   props<{ error: any }>()
 );

@@ -1,1 +1,46 @@
-<p>view-lists works!</p>
+<app-util-loader *ngIf="loading$ | async"></app-util-loader>
+<div class="container d-flex flex-column gap-5">
+  <div class="text-center">
+    <h2>Members {{ predicate === 'liked' ? 'I like' : 'who like me' }}</h2>
+  </div>
+  <div class="d-flex justify-content-center">
+    <div class="btn-group" name="predicate">
+      <button
+        *ngFor="let opt of predicateOpt"
+        class="btn btn-primary"
+        [btnRadio]="opt.value"
+        [(ngModel)]="predicate"
+        [disabled]="predicate === opt.value"
+        (click)="load()"
+      >
+        {{ opt.display }}
+      </button>
+    </div>
+  </div>
+  <ng-template #noMatches>
+    <h4 class="text-center">There are no results to display here</h4>
+  </ng-template>
+  <ng-container *ngIf="(members$ | async)?.length; else noMatches">
+    <div class="d-flex flex-wrap gap-5 m-3 justify-content-center">
+      <div *ngFor="let member of members$ | async">
+        <app-util-member-card [member]="member"></app-util-member-card>
+      </div>
+    </div>
+    <div class="w-100 d-flex justify-content-center" *ngIf="pagination$ | async as pagination">
+      <pagination
+        [boundaryLinks]="true"
+        [totalItems]="pagination.totalItems"
+        [itemsPerPage]="pagination.itemsPerPage"
+        [maxSize]="10"
+        [disabled]="pagination.totalPages < 2"
+        [(ngModel)]="pageNumber"
+        (pageChanged)="pageChanged($event)"
+        previousText="&lsaquo;"
+        nextText="&rsaquo;"
+        firstText="&laquo;"
+        lastText="&raquo;"
+      >
+      </pagination>
+    </div>
+  </ng-container>
+</div>

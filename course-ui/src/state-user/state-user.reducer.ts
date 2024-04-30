@@ -27,6 +27,8 @@ export interface State extends EntityState<User> {
   filters: UsersFilters;
   defaultFilters?: UsersFilters;
   selectedUser?: User;
+  likesPagination: Pagination;
+  likesUsers?: User[];
 };
 
 export interface UserPartialState {
@@ -43,6 +45,7 @@ export const initialState: State = userAdapter.getInitialState({
   loading: 0,
   pagination: defaultPagination,
   filters: {},
+  likesPagination: defaultPagination,
 });
 
 export const userReducer = createReducer(
@@ -171,6 +174,41 @@ export const userReducer = createReducer(
       : undefined,
   })),
   on(UserActions.deletePhotoFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(UserActions.loadUserLikes, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.goToUserLikesPage, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.loadPagedUserLikesSuccess, (state, { likesUsers, likesPagination }) => ({
+    ...state,
+    loading: state.loading - 1,
+    likesUsers,
+    likesPagination,
+  })),
+  on(UserActions.loadPagedUserLikesFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(UserActions.like, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.likeSuccess, (state) => ({
+    ...state,
+    loading: state.loading - 1,
+  })),
+  on(UserActions.likeFailure, (state, { error }) => ({
     ...state,
     loading: state.loading - 1,
     error,

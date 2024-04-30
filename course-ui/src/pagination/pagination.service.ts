@@ -9,9 +9,9 @@ import { ApiPageParams, PaginatedResult } from './pagination.models';
 export class PaginationService {
 
   getPaginationHeader(page: number, itemsPerPage: number) {
-    let params = new HttpParams();
-    params = params.append(propertyOf<ApiPageParams>("pageNumber"), page);
-    params = params.append(propertyOf<ApiPageParams>("pageSize"), itemsPerPage);
+    let params = new HttpParams()
+      .append(propertyOf<ApiPageParams>("pageNumber"), page)
+      .append(propertyOf<ApiPageParams>("pageSize"), itemsPerPage);
     return params;
   }
 

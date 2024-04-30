@@ -11,6 +11,8 @@ export const getError = createSelector(getUserState, (state) => state.error);
 export const getPagination = createSelector(getUserState, (state) => state.pagination);
 export const getFilters = createSelector(getUserState, (state) => state.filters);
 export const getDefaultFilters = createSelector(getUserState, (state) => state.defaultFilters);
+export const getLikesPagination = createSelector(getUserState, (state) => state.likesPagination);
+export const getLikesUsers = createSelector(getUserState, (state) => state.likesUsers);
 export const getAllUsers = createSelector(getUserState, (state) => selectAll(state));
 export const getSelectedUser = createSelector(getUserState, (state) => state.selectedUser);
 // export const getSelectedUser = createSelector(getUserState, (state) =>

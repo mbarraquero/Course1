@@ -1,5 +1,8 @@
 import { ApiUserOrderBy } from './api/http-user.models';
-export { ApiUserOrderBy as UserOrderBy } from './api/http-user.models';
+export {
+  ApiUserOrderBy as UserOrderBy,
+  ApiLikesPredicate as LikesPredicate,
+} from './api/http-user.models';
 
 export interface User {
   id: number;

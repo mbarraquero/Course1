@@ -1,0 +1,22 @@
+.member-card {
+  width: 12rem;
+
+  .card-image-wrapper {
+    transition: all 0.5s;
+
+    .image-options {
+      opacity: 0;
+      transform: translateY(-110%);
+      transition: all 0.5s;
+    }
+
+    &:hover {
+      transform: scale(1.25);
+      opacity: 0.75;
+
+      .image-options {
+        opacity: 1;
+      }
+    }
+  }
+}

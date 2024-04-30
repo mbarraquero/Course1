@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
 import * as UserActions from './state-user.actions';
-import { Photo, UsersFilters, UserUpdate } from './state-user.models';
+import { LikesPredicate, Photo, User, UsersFilters, UserUpdate } from './state-user.models';
 import * as UserSelectors from './state-user.selectors';
 
 @Injectable()
@@ -12,6 +12,8 @@ export class StateUserFacade {
   error$ = this.store.pipe(select(UserSelectors.getError));
   pagination$ = this.store.pipe(select(UserSelectors.getPagination));
   filters$ = this.store.pipe(select(UserSelectors.getFilters));
+  likesPagination$ = this.store.pipe(select(UserSelectors.getLikesPagination));
+  likesUsers$ = this.store.pipe(select(UserSelectors.getLikesUsers));
   allUsers$ = this.store.pipe(select(UserSelectors.getAllUsers));
   selectedUser$ = this.store.pipe(select(UserSelectors.getSelectedUser));
 
@@ -33,6 +35,10 @@ export class StateUserFacade {
     this.store.dispatch(UserActions.resetFilters());
   }
 
+  like(user: User) {
+    this.store.dispatch(UserActions.like({ user }));
+  } 
+
   loadUser(userName: string) {
     this.store.dispatch(UserActions.loadUser({ userName }));
   }
@@ -51,5 +57,9 @@ export class StateUserFacade {
 
   deletePhoto(photo: Photo) {
     this.store.dispatch(UserActions.deletePhoto({ photo }));
+  }
+
+  loadUserLikes(predicate: LikesPredicate) {
+    this.store.dispatch(UserActions.loadUserLikes({ predicate }));
   }
 }

@@ -66,33 +66,7 @@
   <ng-container *ngIf="(members$ | async)?.length; else noMatches">
     <div class="d-flex flex-wrap gap-5 m-3 justify-content-center">
       <div *ngFor="let member of members$ | async">
-        <div class="member-card card">
-          <div class="card-image-wrapper position-relative">
-            <img
-              [src]="member.photoUrl || 'assets/default-member-photo.png'"
-              class="card-image card-img-top rounded"
-              [alt]="member.knownAs"
-            >
-            <div class="image-options position-absolute d-flex justify-content-center gap-2 w-100">
-              <button class="btn btn-primary" routerLink="/members/{{member.userName}}">
-                <i class="fa fa-user"></i>
-              </button>
-              <button class="btn btn-primary">
-                <i class="fa fa-heart"></i>
-              </button>
-              <button class="btn btn-primary">
-                <i class="fa fa-envelope"></i>
-              </button>
-            </div>
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">
-              <i class="fa fa-user me-2"></i>
-              {{member.knownAs}}
-            </h5>
-            <p class="card-text">{{member.city}}</p>
-          </div>
-        </div>
+        <app-util-member-card [member]="member"></app-util-member-card>
       </div>
     </div>
     <div class="w-100 d-flex justify-content-center" *ngIf="pagination$ | async as pagination">
@@ -101,6 +75,7 @@
         [totalItems]="pagination.totalItems"
         [itemsPerPage]="pagination.itemsPerPage"
         [maxSize]="10"
+        [disabled]="pagination.totalPages < 2"
         [(ngModel)]="pageNumber"
         (pageChanged)="pageChanged($event)"
         previousText="&lsaquo;"

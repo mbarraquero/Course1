@@ -1,0 +1,27 @@
+<div *ngIf="member" class="member-card card">
+  <div class="card-image-wrapper position-relative">
+    <img
+      [src]="member.photoUrl || 'assets/default-member-photo.png'"
+      class="card-image card-img-top rounded"
+      [alt]="member.knownAs"
+    >
+    <div class="image-options position-absolute d-flex justify-content-center gap-2 w-100">
+      <button class="btn btn-primary" routerLink="/members/{{member.userName}}">
+        <i class="fa fa-user"></i>
+      </button>
+      <button class="btn btn-primary" (click)="like(member)">
+        <i class="fa fa-heart"></i>
+      </button>
+      <button class="btn btn-primary">
+        <i class="fa fa-envelope"></i>
+      </button>
+    </div>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">
+      <i class="fa fa-user me-2"></i>
+      {{member.knownAs}}
+    </h5>
+    <p class="card-text">{{member.city}}</p>
+  </div>
+</div>
