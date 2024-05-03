@@ -1,6 +1,6 @@
 <app-util-loader *ngIf="loading$ | async"></app-util-loader>
 <div *ngIf="member$ | async as member" class="row">
-  <div class="col-4">
+  <div class="col-3">
     <div class="card">
       <img
         src="{{ member.photoUrl || 'assets/default-member-photo.png' }}"
@@ -26,18 +26,21 @@
           <button class="btn btn-primary">
             Like
           </button>
-          <button class="btn btn-success">
+          <button
+            class="btn btn-success"
+            (click)="selectTab('Messages')"
+          >
             Messages
           </button>
         </div>
       </div>
     </div>
   </div>
-  <div class="col-8">
+  <div class="col-9">
     <ng-template #blankSpace>
       <p style="white-space:pre-wrap;">{{' '}}</p>
     </ng-template>
-    <tabset>
+    <tabset #memberTabs>
       <tab heading="About {{ member.knownAs }}">
         <div class="m-3">
           <h4>Description</h4>
@@ -65,8 +68,15 @@
           <p class="m-3">{{ member.knownAs }} has no photos to display at the moment</p>
         </ng-template>
       </tab>
-      <tab heading="Messages">
-        TBD
+      <tab heading="Messages" (selectTab)="onMessagesSelect()">
+        <app-members-messages
+          [loading]="(loading$ | async) || false"
+          [error]="error$ | async"
+          [username]="username"
+          [messages]="(messages$ | async) || undefined"
+          (messageSent)="onMessageSent($event, member)"
+        >
+        </app-members-messages>
       </tab>
     </tabset>
   </div>

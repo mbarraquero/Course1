@@ -8,10 +8,10 @@ namespace API.Data;
 
 public interface ILikesRepository
 {
-    Task<UserLike> GetUserLike(int sourceUserId, int targetUserId);
-    Task<AppUser> GetUserWithLikes(int userId);
-    Task<PagedList<LikeDto>> GetUserLikes(LikesParams likesParams);
-    Task<UserLike> AddNewLike(AppUser sourceUser, int targetUserId);
+    Task<UserLike> GetUserLikeAsync(int sourceUserId, int targetUserId);
+    Task<AppUser> GetUserWithLikesAsync(int userId);
+    Task<PagedList<LikeDto>> GetUserLikesAsync(LikesParams likesParams);
+    Task<UserLike> AddNewLikeAsync(AppUser sourceUser, int targetUserId);
 }
 
 public class LikesRepository : ILikesRepository
@@ -23,12 +23,12 @@ public class LikesRepository : ILikesRepository
         _context = context;
     }
 
-    public async Task<UserLike> GetUserLike(int sourceUserId, int targetUserId)
+    public async Task<UserLike> GetUserLikeAsync(int sourceUserId, int targetUserId)
     {
         return await _context.Likes.FindAsync(sourceUserId, targetUserId);
     }
 
-    public async Task<PagedList<LikeDto>> GetUserLikes(LikesParams likesParams)
+    public async Task<PagedList<LikeDto>> GetUserLikesAsync(LikesParams likesParams)
     {
         IQueryable<AppUser> users = null;
         
@@ -62,14 +62,14 @@ public class LikesRepository : ILikesRepository
         );
     }
 
-    public async Task<AppUser> GetUserWithLikes(int userId)
+    public async Task<AppUser> GetUserWithLikesAsync(int userId)
     {
         return await _context.Users
             .Include(x => x.LikedUsers)
             .FirstOrDefaultAsync(x => x.Id == userId);
     }
 
-    public async Task<UserLike> AddNewLike(AppUser sourceUser, int targetUserId)
+    public async Task<UserLike> AddNewLikeAsync(AppUser sourceUser, int targetUserId)
     {
         var userLike = new UserLike
         {

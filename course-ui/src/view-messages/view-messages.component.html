@@ -1,1 +1,85 @@
-<p>view-messages works!</p>
+<app-util-loader *ngIf="loading$ | async"></app-util-loader>
+<div class="container d-flex flex-column gap-5">
+  <div class="d-flex justify-content-center">
+    <div class="btn-group" name="container">
+      <button
+        *ngFor="let opt of containerOpt"
+        class="btn btn-primary"
+        [btnRadio]="opt.value"
+        [(ngModel)]="container"
+        [disabled]="container === opt.value"
+        (click)="load()"
+      >
+        <i class="fa me-2" [ngClass]="'fa-' + opt.icon"></i> {{ opt.display }}
+      </button>
+    </div>
+  </div>
+  <ng-template #noMessages>
+    <h4 *ngIf="!(loading$ | async)" class="text-center">There are no messages to display in this folder</h4>
+  </ng-template>
+  <ng-container *ngIf="(messages$ | async)?.length; else noMessages">
+    <table class="table table-hover cursor-pointer">
+      <thead>
+        <tr>
+          <th class="w-40">Message</th>
+          <ng-container *ngIf="container !== 'Outbox'; else outboxTh">
+            <th class="w-20">From</th>
+            <th class="w-20">Sent</th>
+          </ng-container>
+          <ng-template #outboxTh>
+            <th class="w-20">To</th>
+            <th class="w-20">Received</th>
+          </ng-template>
+          <th class="w-20"></th>
+        </tr>
+      </thead>
+      <tbody class="align-middle">
+        <ng-container *ngFor="let message of messages$ | async">
+          <ng-container *ngIf="getMessageUser(message) as member">
+            <tr
+              routerLink="/members/{{ member.username }}"
+              [queryParams]="{ tab: 'Messages' }"
+            >
+              <td>{{ message.content }}</td>
+              <td>
+                <img
+                  class="profile-pic img-circle rounded-circle me-2"
+                  [src]="member.photoUrl || 'assets/default-member-photo.png'"
+                  [alt]="member.username + ' photo'"
+                >
+                <strong>{{ member.username }}</strong>
+              </td>
+              <td>
+                {{ message.messageSent + 'z' | timeago }}
+              </td>
+              <td>
+                <button
+                  class="btn btn-danger"
+                  (click)="deleteMessage($event, message)"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+    <div class="w-100 d-flex justify-content-center" *ngIf="pagination$ | async as pagination">
+      <pagination
+        [boundaryLinks]="true"
+        [totalItems]="pagination.totalItems"
+        [itemsPerPage]="pagination.itemsPerPage"
+        [maxSize]="10"
+        [disabled]="pagination.totalPages < 2"
+        [(ngModel)]="pageNumber"
+        (pageChanged)="pageChanged($event)"
+        previousText="&lsaquo;"
+        nextText="&rsaquo;"
+        firstText="&laquo;"
+        lastText="&raquo;"
+      >
+      </pagination>
+    </div>
+  </ng-container>
+</div>

@@ -13,6 +13,8 @@ export const getFilters = createSelector(getUserState, (state) => state.filters)
 export const getDefaultFilters = createSelector(getUserState, (state) => state.defaultFilters);
 export const getLikesPagination = createSelector(getUserState, (state) => state.likesPagination);
 export const getLikesUsers = createSelector(getUserState, (state) => state.likesUsers);
+export const getMessagesPagination = createSelector(getUserState, (state) => state.messagesPagination);
+export const getMessages = createSelector(getUserState, (state) => state.messages);
 export const getAllUsers = createSelector(getUserState, (state) => selectAll(state));
 export const getSelectedUser = createSelector(getUserState, (state) => state.selectedUser);
 // export const getSelectedUser = createSelector(getUserState, (state) =>

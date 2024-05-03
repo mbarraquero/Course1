@@ -106,7 +106,7 @@ public class UsersController : BaseApiController
             if (result.Error != null) return BadRequest(result.Error.Message);
         }
 
-        var deletedPhoto = await _repository.DeletePhoto(user, photo);
+        var deletedPhoto = await _repository.DeletePhotoAsync(user, photo);
         if (deletedPhoto == null) return BadRequest("Cannot delete photo");
 
         return Ok();

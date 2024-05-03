@@ -7,11 +7,11 @@ import { catchError, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { ErrorService } from 'src/error';
 import { UserSessionService } from 'src/user-session';
 
-import { ApiLikeDto, ApiMemberDto } from './api/http-user.models';
+import { ApiLikeDto, ApiMemberDto, ApiMessageDto } from './api/http-user.models';
 import { HttpUserService } from './api/http-user.service';
 
 import * as UserActions from './state-user.actions';
-import { Photo, User } from './state-user.models';
+import { Message, Photo, User } from './state-user.models';
 import {
   UserPartialState,
   defaultMaxAge,
@@ -209,6 +209,28 @@ export class UserEffects {
     return UserActions.setMainPhotoSuccess({ photoUrl, photos });
   }
 
+  deletePhoto$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.deletePhoto),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getSelectedUser))
+      ),
+      switchMap(([{ photo }, user]) =>
+        this.api.deletePhoto(photo.id).pipe(
+          map(() => {
+            const photos = user?.photos.filter((currentPhoto) =>
+              currentPhoto.id !== photo.id
+            ) ?? [];
+            return UserActions.deletePhotoSuccess({ photos });
+          }),
+          catchError((error) => of(UserActions.deletePhotoFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        )
+      )
+    )
+  );
+
   loadUserLikes$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.loadUserLikes),
@@ -272,21 +294,106 @@ export class UserEffects {
     )
   );
 
-  deletePhoto$ = createEffect(() =>
+  loadUserMessages$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(UserActions.deletePhoto),
+      ofType(UserActions.loadUserMessages),
       withLatestFrom(
-        this.store.pipe(select(UserSelectors.getSelectedUser))
+        this.store.pipe(select(UserSelectors.getMessagesPagination)),
       ),
-      switchMap(([{ photo }, user]) =>
-        this.api.deletePhoto(photo.id).pipe(
-          map(() => {
-            const photos = user?.photos.filter((currentPhoto) =>
-              currentPhoto.id !== photo.id
-            ) ?? [];
-            return UserActions.deletePhotoSuccess({ photos });
+      map(([{ container }, { itemsPerPage }]) =>
+        UserActions.loadPagedUserMessages({
+          pageNumber: defaultPagination.currentPage,
+          pageSize: itemsPerPage,
+          container,
+        })
+      )
+    )
+  );
+
+  goToUserMessagesPage$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.goToUserMessagesPage),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getMessagesPagination)),
+      ),
+      map(([{ pageNumber, container }, { itemsPerPage }]) =>
+        UserActions.loadPagedUserMessages({
+          pageNumber,
+          pageSize: itemsPerPage,
+          container,
+        })
+      )
+    )
+  );
+
+  loadPagedUserMessages$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.loadPagedUserMessages),
+      switchMap(({ pageNumber, pageSize, container }) =>
+        this.api.getMessagesByContainer(pageNumber, pageSize, container).pipe(
+          map(({ result, pagination }) => UserActions.loadPagedUserMessagesSuccess({
+            messages: result.map((apiMessage) => this.toMessage(apiMessage)),
+            messagesPagination: pagination,
+          })),
+          catchError((error) => of(UserActions.loadPagedUserMessagesFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        )
+      )
+    )
+  );
+
+  loadUserMessagesThread$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.loadUserMessagesThread),
+      switchMap(({ userName }) =>
+        this.api.getMessagesThread(userName).pipe(
+          map((apiMessages) => UserActions.loadUserMessagesThreadSuccess({
+            messages: apiMessages.map((apiMessage) => this.toMessage(apiMessage)),
+          })),
+          catchError((error) => of(UserActions.loadUserMessagesThreadFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        )
+      )
+    )
+  );
+
+  sendMessage$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.sendMessage),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getMessages)),
+      ),
+      switchMap(([{ userName, message }, messages]) =>
+        this.api.sendMessage(userName, message).pipe(
+          map((apiMessage) => {
+            const updatedMessages = [
+              ...messages ?? [],
+              this.toMessage(apiMessage),
+            ]
+            return UserActions.sendMessageSuccess({ messages: updatedMessages })
           }),
-          catchError((error) => of(UserActions.deletePhotoFailure({
+          catchError((error) => of(UserActions.sendMessageFailure({
+            error: this.errorService.getErrorMessage(error)
+          })))
+        )
+      )
+    )
+  );
+
+  deleteMessage$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.deleteMesage),
+      withLatestFrom(
+        this.store.pipe(select(UserSelectors.getMessages)),
+      ),
+      switchMap(([{ message }, messages]) =>
+        this.api.deleteMessage(message.id).pipe(
+          map(() => UserActions.sendMessageSuccess({
+            messages: messages?.filter((msg) => msg.id !== message.id) ?? []
+          })),
+          catchError((error) => of(UserActions.deleteMesageFailure({
             error: this.errorService.getErrorMessage(error)
           })))
         )
@@ -305,6 +412,10 @@ export class UserEffects {
           UserActions.deletePhotoFailure,
           UserActions.loadPagedUserLikesFailure,
           UserActions.likeFailure,
+          UserActions.loadPagedUserMessagesFailure,
+          UserActions.loadUserMessagesThreadFailure,
+          UserActions.sendMessageFailure,
+          UserActions.deleteMesageFailure,
           // drop here errors to be generically handled
         ),
         tap(({ error }) => this.errorService.handleError(error as HttpErrorResponse))
@@ -351,5 +462,24 @@ export class UserEffects {
       knownAs: apiLikeUser.knownAs,
       city: apiLikeUser.city,
     } as User;
+  }
+
+  private toMessage(apiMessage: ApiMessageDto) {
+    return {
+      id: apiMessage.id,
+      sender: {
+        id: apiMessage.senderId,
+        username: apiMessage.senderUsername,
+        photoUrl: apiMessage.senderPhotoUrl,
+      },
+      recipient: {
+        id: apiMessage.recipientId,
+        username: apiMessage.recipientUsername,
+        photoUrl: apiMessage.recipientPhotoUrl,
+      },
+      content: apiMessage.content,
+      messageSent: apiMessage.messageSent,
+      dateRead: apiMessage.dateRead,
+    } as Message;
   }
 }

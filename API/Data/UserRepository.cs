@@ -18,7 +18,7 @@ public interface IUserRepository
     Task<PhotoDto> AddPhotoAsync(AppUser user, string url, string publicId);
     Photo GetPhotoById(AppUser user, int photoId);
     Task<Photo> SetMainPhotoAsync(AppUser user, Photo newMainPhoto);
-    Task<Photo> DeletePhoto(AppUser user, Photo photo);
+    Task<Photo> DeletePhotoAsync(AppUser user, Photo photo);
 }
 
 public class UserRepository : IUserRepository
@@ -132,7 +132,7 @@ public class UserRepository : IUserRepository
         return await SaveAll(newMainPhoto);
     }
 
-    public async Task<Photo> DeletePhoto(AppUser user, Photo photo)
+    public async Task<Photo> DeletePhotoAsync(AppUser user, Photo photo)
     {
         user.Photos.Remove(photo);
         return await SaveAll(photo);
@@ -144,7 +144,7 @@ public class UserRepository : IUserRepository
         return updates > 0 ? entity : default;
     }
 
-    private async Task<U> SaveAll<T, U>(T entity, Func<T, U> map) where T : new() where U : new()
+    private async Task<U> SaveAll<T, U>(T entity, Func<T, U> map)
     {
         var updates = await _context.SaveChangesAsync();
         return updates > 0 ? map(entity) : default;

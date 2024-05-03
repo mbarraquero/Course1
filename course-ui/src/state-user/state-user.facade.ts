@@ -2,7 +2,15 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
 import * as UserActions from './state-user.actions';
-import { LikesPredicate, Photo, User, UsersFilters, UserUpdate } from './state-user.models';
+import {
+  LikesPredicate,
+  Message,
+  MessagesContainer,
+  Photo,
+  User,
+  UsersFilters,
+  UserUpdate
+} from './state-user.models';
 import * as UserSelectors from './state-user.selectors';
 
 @Injectable()
@@ -14,6 +22,8 @@ export class StateUserFacade {
   filters$ = this.store.pipe(select(UserSelectors.getFilters));
   likesPagination$ = this.store.pipe(select(UserSelectors.getLikesPagination));
   likesUsers$ = this.store.pipe(select(UserSelectors.getLikesUsers));
+  messagesPagination$ = this.store.pipe(select(UserSelectors.getMessagesPagination));
+  messages$ = this.store.pipe(select(UserSelectors.getMessages));
   allUsers$ = this.store.pipe(select(UserSelectors.getAllUsers));
   selectedUser$ = this.store.pipe(select(UserSelectors.getSelectedUser));
 
@@ -61,5 +71,29 @@ export class StateUserFacade {
 
   loadUserLikes(predicate: LikesPredicate) {
     this.store.dispatch(UserActions.loadUserLikes({ predicate }));
+  }
+
+  goToUserLikesPage(pageNumber: number, predicate: LikesPredicate) {
+    this.store.dispatch(UserActions.goToUserLikesPage({ pageNumber, predicate }));
+  }
+
+  loadUserMessages(container: MessagesContainer) {
+    this.store.dispatch(UserActions.loadUserMessages({ container }));
+  }
+
+  goToUserMessagesPage(pageNumber: number, container: MessagesContainer) {
+    this.store.dispatch(UserActions.goToUserMessagesPage({ pageNumber, container }));
+  }
+
+  loadUserMessagesThread(userName: string) {
+    this.store.dispatch(UserActions.loadUserMessagesThread({ userName }));
+  }
+
+  sendMessage(userName: string, message: string) {
+    this.store.dispatch(UserActions.sendMessage({ userName, message }));
+  }
+
+  deleteMesage(message: Message) {
+    this.store.dispatch(UserActions.deleteMesage({ message }));
   }
 }

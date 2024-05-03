@@ -67,3 +67,18 @@ export interface ApiLikesParams extends ApiPageParams {
   // userId: number; // unused
   predicate: ApiLikesPredicate;
 };
+
+export interface ApiMessageDto {
+  id: number;
+  senderId: number;
+  senderUsername: string;
+  senderPhotoUrl: string;
+  recipientId: number;
+  recipientUsername: string;
+  recipientPhotoUrl: string;
+  content: string;
+  dateRead?: string;
+  messageSent: string;
+}
+
+export type ApiMessagesContainer = 'Inbox' | 'Outbox' | 'Unread';

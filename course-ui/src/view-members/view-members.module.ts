@@ -15,6 +15,7 @@ import { unsavedChangesGuard } from './guards/unsaved-changes.guard';
 import { MembersDetailsComponent } from './members-details/members-details.component';
 import { MembersEditComponent } from './members-edit/members-edit.component';
 import { MembersListComponent } from './members-list/members-list.component';
+import { MembersMessagesComponent } from './members-messages/members-messages.component';
 import { ViewMembersComponent } from './view-members.component';
 
 const routes: Routes = [
@@ -46,6 +47,7 @@ const routes: Routes = [
     MembersDetailsComponent,
     MembersEditComponent,
     MembersListComponent,
+    MembersMessagesComponent,
   ],
   imports: [
     CommonModule,

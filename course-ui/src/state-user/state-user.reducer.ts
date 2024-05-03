@@ -4,7 +4,7 @@ import { createReducer, on } from '@ngrx/store';
 import { Pagination } from 'src/pagination';
 
 import * as UserActions from './state-user.actions';
-import { User, UserOrderBy, UsersFilters } from './state-user.models';
+import { Message, User, UserOrderBy, UsersFilters } from './state-user.models';
 
 export const userFeatureKey = 'user';
 
@@ -29,6 +29,8 @@ export interface State extends EntityState<User> {
   selectedUser?: User;
   likesPagination: Pagination;
   likesUsers?: User[];
+  messagesPagination: Pagination;
+  messages?: Message[];
 };
 
 export interface UserPartialState {
@@ -46,6 +48,7 @@ export const initialState: State = userAdapter.getInitialState({
   pagination: defaultPagination,
   filters: {},
   likesPagination: defaultPagination,
+  messagesPagination: defaultPagination,
 });
 
 export const userReducer = createReducer(
@@ -209,6 +212,74 @@ export const userReducer = createReducer(
     loading: state.loading - 1,
   })),
   on(UserActions.likeFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(UserActions.loadUserMessages, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+    messages: undefined,
+  })),
+  on(UserActions.goToUserMessagesPage, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.loadPagedUserMessagesSuccess, (state, { messages, messagesPagination }) => ({
+    ...state,
+    loading: state.loading - 1,
+    messages,
+    messagesPagination,
+  })),
+  on(UserActions.loadPagedUserMessagesFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(UserActions.loadUserMessagesThread, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+    messages: undefined,
+  })),
+  on(UserActions.loadUserMessagesThreadSuccess, (state, { messages }) => ({
+    ...state,
+    loading: state.loading - 1,
+    messages,
+  })),
+  on(UserActions.loadUserMessagesThreadFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(UserActions.sendMessage, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.sendMessageSuccess, (state, { messages }) => ({
+    ...state,
+    loading: state.loading - 1,
+    messages,
+  })),
+  on(UserActions.sendMessageFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(UserActions.deleteMesage, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(UserActions.deleteMesageSuccess, (state, { messages }) => ({
+    ...state,
+    loading: state.loading - 1,
+    messages,
+  })),
+  on(UserActions.deleteMesageFailure, (state, { error }) => ({
     ...state,
     loading: state.loading - 1,
     error,

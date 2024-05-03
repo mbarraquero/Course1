@@ -11,6 +11,8 @@ import {
   ApiLikesPredicate,
   ApiMemberDto,
   ApiMemberUpdateDto,
+  ApiMessageDto,
+  ApiMessagesContainer,
   ApiUserParams,
   GetUsersParams,
 } from './http-user.models';
@@ -74,7 +76,7 @@ export class HttpUserService {
   }
 
   getLikesByPredicate(pageNumber: number, pageSize: number, predicate: ApiLikesPredicate) {
-    let params = this.paginationService.getPaginationHeader(pageNumber, pageSize)
+    const params = this.paginationService.getPaginationHeader(pageNumber, pageSize)
       .append('predicate', predicate);
     const requestUrl = this.apiUrl + 'Likes';
     return this.http.get<ApiLikeDto[]>(
@@ -84,5 +86,37 @@ export class HttpUserService {
     .pipe(map((response) =>
       this.paginationService.getPaginatedResult(response)
     ));
+  }
+
+  getMessagesByContainer(pageNumber: number, pageSize: number, container: ApiMessagesContainer) {
+    const params = this.paginationService.getPaginationHeader(pageNumber, pageSize)
+      .append('container', container);
+    const requestUrl = this.apiUrl + 'Messages';
+    return this.http.get<ApiMessageDto[]>(
+      requestUrl,
+      { params, observe: 'response' }
+    )
+    .pipe(map((response) =>
+      this.paginationService.getPaginatedResult(response)
+    ));
+  }
+
+  getMessagesThread(username: string) {
+    const requestUrl = this.apiUrl + 'Messages/thread/' + username;
+    return this.http.get<ApiMessageDto[]>(requestUrl);
+  }
+
+  sendMessage(username: string, message: string) {
+    const requestUrl = this.apiUrl + 'Messages';
+    const body = {
+      recipientUsername: username,
+      content: message,
+    }
+    return this.http.post<ApiMessageDto>(requestUrl, body);
+  }
+
+  deleteMessage(messageId: number) {
+    const requestUrl = this.apiUrl + 'Messages/' + messageId;
+    return this.http.delete<void>(requestUrl);
   }
 }

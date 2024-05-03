@@ -2,6 +2,7 @@ import { ApiUserOrderBy } from './api/http-user.models';
 export {
   ApiUserOrderBy as UserOrderBy,
   ApiLikesPredicate as LikesPredicate,
+  ApiMessagesContainer as MessagesContainer,
 } from './api/http-user.models';
 
 export interface User {
@@ -39,4 +40,19 @@ export interface UserUpdate {
   interests: string;
   city: string;
   country: string;
+}
+
+export interface Message {
+  id: number;
+  sender: MessageUser;
+  recipient: MessageUser;
+  content: string;
+  dateRead?: string;
+  messageSent: string;
+}
+
+export interface MessageUser {
+  id: number;
+  username: string;
+  photoUrl: string;
 }

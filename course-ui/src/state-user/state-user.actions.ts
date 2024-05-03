@@ -2,7 +2,7 @@ import { createAction, props } from '@ngrx/store';
 
 import { Pagination } from 'src/pagination';
 
-import { LikesPredicate, Photo, User, UserUpdate, UsersFilters } from './state-user.models';
+import { LikesPredicate, Message, MessagesContainer, Photo, User, UserUpdate, UsersFilters } from './state-user.models';
 
 function prependLabel(actionName: string, type?: 'api' | 'page') {
   const typeLabel = type === 'api' ? '/API' : !!type ? '/Page' : '';
@@ -34,7 +34,7 @@ export const loadPagedUsersSuccess = createAction(
 );
 export const loadPagedUsersFailure = createAction(
   prependLabel('Load Paged Users Failure', 'api'),
-  props<{ error: any }>()
+  props<{ error: any; }>()
 );
 
 export const loadUser = createAction(
@@ -47,7 +47,7 @@ export const loadUserSuccess = createAction(
 );
 export const loadUserFailure = createAction(
   prependLabel('Load User Failure', 'api'),
-  props<{ error: any }>()
+  props<{ error: any; }>()
 );
 
 export const updateUser = createAction(
@@ -60,7 +60,7 @@ export const updateUserSuccess = createAction(
 );
 export const updateUserFailure = createAction(
   prependLabel('Update User Failure', 'api'),
-  props<{ error: any }>()
+  props<{ error: any; }>()
 );
 
 export const photoAdded = createAction(
@@ -78,7 +78,7 @@ export const setMainPhotoSuccess = createAction(
 );
 export const setMainPhotoFailure = createAction(
   prependLabel('Set Main Photo Failure', 'api'),
-  props<{ error: any }>()
+  props<{ error: any; }>()
 );
 
 export const deletePhoto = createAction(
@@ -91,7 +91,7 @@ export const deletePhotoSuccess = createAction(
 );
 export const deletePhotoFailure = createAction(
   prependLabel('Delete Photo Failure', 'api'),
-  props<{ error: any }>()
+  props<{ error: any; }>()
 );
 
 export const loadUserLikes = createAction(
@@ -112,7 +112,7 @@ export const loadPagedUserLikesSuccess = createAction(
 );
 export const loadPagedUserLikesFailure = createAction(
   prependLabel('Load Paged User Likes Failure', 'api'),
-  props<{ error: any }>()
+  props<{ error: any; }>()
 );
 
 export const like = createAction(
@@ -122,5 +122,66 @@ export const like = createAction(
 export const likeSuccess = createAction(prependLabel('Like Success', 'api'));
 export const likeFailure = createAction(
   prependLabel('Like Failure', 'api'),
-  props<{ error: any }>()
+  props<{ error: any; }>()
+);
+// TODO dislike
+
+export const loadUserMessages = createAction(
+  prependLabel('Load User Messages', 'page'),
+  props<{ container: MessagesContainer; }>()
+);
+export const goToUserMessagesPage = createAction(
+  prependLabel('Go To User Messages Page', 'page'),
+  props<{ pageNumber: number; container: MessagesContainer; }>()
+);
+export const loadPagedUserMessages = createAction(
+  prependLabel('Load Paged User Messages'),
+  props<{ pageNumber: number; pageSize: number; container: MessagesContainer; }>()
+);
+export const loadPagedUserMessagesSuccess = createAction(
+  prependLabel('Load Paged User Messages Success', 'api'),
+  props<{ messages: Message[]; messagesPagination: Pagination; }>()
+);
+export const loadPagedUserMessagesFailure = createAction(
+  prependLabel('Load Paged User Messages Failure', 'api'),
+  props<{ error: any; }>()
+);
+
+export const loadUserMessagesThread = createAction(
+  prependLabel('Load User Messages Thread', 'page'),
+  props<{ userName: string; }>()
+);
+export const loadUserMessagesThreadSuccess = createAction(
+  prependLabel('Load User Messages Thread Success', 'api'),
+  props<{ messages: Message[]; }>()
+);
+export const loadUserMessagesThreadFailure = createAction(
+  prependLabel('Load User Messages Thread Failure', 'api'),
+  props<{ error: any; }>()
+);
+
+export const sendMessage = createAction(
+  prependLabel('Send Message', 'page'),
+  props<{ userName: string; message: string; }>()
+);
+export const sendMessageSuccess = createAction(
+  prependLabel('Send Message Success', 'api'),
+  props<{ messages: Message[]; }>()
+);
+export const sendMessageFailure = createAction(
+  prependLabel('Send Message Failure', 'api'),
+  props<{ error: any; }>()
+);
+
+export const deleteMesage = createAction(
+  prependLabel('Delete Message', 'page'),
+  props<{ message: Message; }>()
+);
+export const deleteMesageSuccess = createAction(
+  prependLabel('Delete Message Success', 'api'),
+  props<{ messages: Message[]; }>()
+);
+export const deleteMesageFailure = createAction(
+  prependLabel('Delete Message Failure', 'api'),
+  props<{ error: any; }>()
 );

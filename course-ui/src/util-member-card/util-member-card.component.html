@@ -12,7 +12,11 @@
       <button class="btn btn-primary" (click)="like(member)">
         <i class="fa fa-heart"></i>
       </button>
-      <button class="btn btn-primary">
+      <button
+        class="btn btn-primary"
+        routerLink="/members/{{member.userName}}"
+        [queryParams]="{ tab: 'Messages' }"
+      >
         <i class="fa fa-envelope"></i>
       </button>
     </div>

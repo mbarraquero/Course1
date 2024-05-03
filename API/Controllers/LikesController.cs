@@ -21,16 +21,16 @@ public class LikesController : BaseApiController
     public async Task<ActionResult> AddLike(string username)
     {
         var currentUserId = User.GetUserId();
-        var sourceUser = await _likesRepository.GetUserWithLikes(currentUserId);
+        var sourceUser = await _likesRepository.GetUserWithLikesAsync(currentUserId);
         if (sourceUser.UserName == username) return BadRequest("Users cannot like themselves");
 
         var likedUser = await _userRepository.GetUserByUsernameAsync(username);
         if (likedUser == null) return NotFound();
 
-        var existingUserLike = await _likesRepository.GetUserLike(currentUserId, likedUser.Id);
+        var existingUserLike = await _likesRepository.GetUserLikeAsync(currentUserId, likedUser.Id);
         if (existingUserLike != null) return BadRequest("User already liked");
 
-        var newUserLike = await _likesRepository.AddNewLike(sourceUser, likedUser.Id);
+        var newUserLike = await _likesRepository.AddNewLikeAsync(sourceUser, likedUser.Id);
         if (newUserLike == null) return BadRequest($"Unable to like {username}");
 
         return Ok();
@@ -43,7 +43,7 @@ public class LikesController : BaseApiController
         if (!validPredicates.Contains(likesParams.Predicate)) return BadRequest($"Invalid predicate: {likesParams.Predicate}");
 
         likesParams.UserId = User.GetUserId();
-        var users = await _likesRepository.GetUserLikes(likesParams);
+        var users = await _likesRepository.GetUserLikesAsync(likesParams);
         Response.AddPaginationHeader(
             new PaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages)
         );

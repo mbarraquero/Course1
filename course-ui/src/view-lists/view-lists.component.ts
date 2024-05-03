@@ -44,6 +44,6 @@ export class ViewListsComponent implements OnInit, OnDestroy {
 
   pageChanged(event: PageChangedEvent) {
     if (event.page === this.pageNumber) return;
-    this.userFacade.goToUserPage(event.page);
+    this.userFacade.goToUserLikesPage(event.page, this.predicate);
   }
 }
