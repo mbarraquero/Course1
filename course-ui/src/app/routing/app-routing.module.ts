@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { loggedInGuard } from './logged-in.guard';
 import { loggedOutGuard } from './logged-out.guard';
+import { adminGuard } from './admin.guard';
 
 const routes: Routes = [
   {
@@ -18,6 +19,11 @@ const routes: Routes = [
     path: 'messages',
     canMatch: [loggedInGuard],
     loadChildren: () => import('../../view-messages').then((m) => m.ViewMessagesModule),
+  },
+  {
+    path: 'admin',
+    canMatch: [adminGuard],
+    loadChildren: () => import('../../view-admin').then((m) => m.ViewAdminModule),
   },
   {
     path: '',

@@ -6,9 +6,12 @@ import { HttpUserSessionService } from './http-user-session.service';
 import { LocalStorageService } from './local-storage.service';
 import { UserSessionInterceptor } from './user-session.interceptor';
 import { UserSessionService } from './user-session.service';
+import { ForRolesDirective } from './for-roles.directive';
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    ForRolesDirective
+  ],
   imports: [
     CommonModule
   ],
@@ -21,6 +24,9 @@ import { UserSessionService } from './user-session.service';
       multi: true,
     },
     UserSessionService,
+  ],
+  exports: [
+    ForRolesDirective,
   ]
 })
 export class UserSessionModule { }

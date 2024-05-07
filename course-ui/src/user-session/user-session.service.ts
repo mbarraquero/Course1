@@ -4,6 +4,7 @@ import { BehaviorSubject, map } from 'rxjs';
 import { ApiUserDto } from './http-user-session.models';
 import { HttpUserSessionService } from './http-user-session.service';
 import { LocalStorageKeys, LocalStorageService } from './local-storage.service';
+import { ApiRole } from './user-session.models';
 
 @Injectable()
 export class UserSessionService {
@@ -21,6 +22,9 @@ export class UserSessionService {
   readonly userKnownAs$ = this.user$.pipe(map((user) => user?.knownAs));
   readonly userPhotoUrl$ = this.user$.pipe(map((user) => user?.photoUrl));
   readonly userGender$ = this.user$.pipe(map((user) => user?.gender));
+  readonly userRoles$ = this.user$.pipe(map((user) =>
+    user ? this.getUserRoles(user) : []
+  ));
   
   constructor(
     private readonly api: HttpUserSessionService,
@@ -95,5 +99,15 @@ export class UserSessionService {
   private onLoginError(error: any) {
     this.errorSubj.next(error);
     this.loadingSubj.next(false);
+  }
+
+  private getUserRoles(user: ApiUserDto) {
+    const token = this.getDecodedToken(user.token);
+    const roles: ApiRole | ApiRole[] = token.role;
+    return Array.isArray(roles) ? roles : [roles];
+  }
+
+  private getDecodedToken(token: string) {
+    return JSON.parse(atob(token.split('.')[1]));
   }
 }

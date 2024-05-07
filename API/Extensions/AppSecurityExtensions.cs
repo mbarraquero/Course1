@@ -1,5 +1,8 @@
-﻿using API.Services;
+﻿using API.Data;
+using API.Entities;
+using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -41,6 +44,15 @@ public static class AppSecurityExtensions
             });
         });
         services.AddCors();
+        // AspNetCore.Identity
+        services.AddIdentityCore<AppUser>(options =>
+        {
+            options.Password.RequireNonAlphanumeric = false;
+        })
+            .AddRoles<AppRole>()
+            .AddRoleManager<RoleManager<AppRole>>()
+            // AspNetCore.Identity.EntityFrameworkCore
+            .AddEntityFrameworkStores<DataContext>();
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -52,6 +64,12 @@ public static class AppSecurityExtensions
                     ValidateAudience = false,
                 };
             });
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+            options.AddPolicy("ModeratePhotoRole", policy => policy.RequireRole("Admin", "Moderator"));
+        });
+
         return services;
     }
 }
