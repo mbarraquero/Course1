@@ -1,13 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { catchError, map, of, switchMap, take, tap, withLatestFrom } from 'rxjs';
 
+import { ApiLikeDto, ApiMemberDto, ApiMessageDto } from 'src/api-models';
 import { ErrorService } from 'src/error';
+import { MessageHubService, PresenceHubService } from 'src/hub';
 import { UserSessionService } from 'src/user-session';
 
-import { ApiLikeDto, ApiMemberDto, ApiMessageDto } from './api/http-user.models';
 import { HttpUserService } from './api/http-user.service';
 
 import * as UserActions from './state-user.actions';
@@ -45,6 +48,8 @@ export class UserEffects {
             filters: defaultFilters,
           }),
           UserActions.setDefaultFilters({ defaultFilters }),
+          UserActions.listenToUsersPresence(),
+          UserActions.listenToUserMessages(),
         ]
       })
     )
@@ -112,19 +117,72 @@ export class UserEffects {
           maxAge: filters.maxAge,
           orderBy: filters.orderBy,
         }).pipe(
-          map(({ result, pagination }) => UserActions.loadPagedUsersSuccess({
+          withLatestFrom(this.presenceHub.onlineUsers$),
+          map(([{ result, pagination }, onlineUsers]) => UserActions.loadPagedUsersSuccess({
             users: result.map((apiUser) => ({
               id: apiUser.id,
               userName: apiUser.userName,
               knownAs: apiUser.knownAs,
               photoUrl: apiUser.photoUrl,
               city: apiUser.city,
+              online: onlineUsers.includes(apiUser.userName),
             } as User)),
             pagination,
+            onlineUsers,
           })),
           catchError((error) => of(UserActions.loadPagedUsersFailure({
             error: this.errorService.getErrorMessage(error)
           })))
+        )
+      )
+    )
+  );
+  
+  listenToUsersPresence$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.listenToUsersPresence),
+      switchMap(() =>
+        this.presenceHub.onlineUsers$.pipe(
+          withLatestFrom(
+            this.store.pipe(select(UserSelectors.getSelectedUser)),
+            this.store.pipe(select(UserSelectors.getAllUsers)),
+          ),
+          map(([onlineUsers, selectedUser, allUsers]) => {
+            const users = allUsers.map((user) => ({
+              ...user,
+              online: onlineUsers.includes(user.userName),
+            }));
+            if (selectedUser) selectedUser = {
+              ...selectedUser,
+              online: onlineUsers.includes(selectedUser.userName),
+            };
+            return UserActions.updateOnlineUsers({ onlineUsers, users, selectedUser });
+          })
+        )
+      )
+    )
+  );
+
+  listenToUsersPresenceToast$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(UserActions.listenToUsersPresence),
+        tap(() => {
+          this.presenceHub.userOnline$.subscribe((username) =>
+            this.toastr.success(`${username} is online`));
+          this.presenceHub.userOffline$.subscribe((username) =>
+            this.toastr.warning(`${username} is offline`));
+        }),
+      ),
+    { dispatch: false },
+  );
+
+  listenToUserMessages$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UserActions.listenToUserMessages),
+      switchMap(() => 
+        this.presenceHub.newMessageReceived$.pipe(
+          map(({ username, knownAs }) => UserActions.showMessageNotification({ username, knownAs }))
         )
       )
     )
@@ -135,8 +193,9 @@ export class UserEffects {
       ofType(UserActions.loadUser),
       switchMap(({ userName }) =>
         this.api.getUserByName(userName).pipe(
-          map((apiUser) => UserActions.loadUserSuccess({
-            user: this.toUser(apiUser)
+          withLatestFrom(this.presenceHub.onlineUsers$),
+          map(([apiUser, onlineUsers]) => UserActions.loadUserSuccess({
+            user: this.toUser(apiUser, onlineUsers)
           })),
           catchError((error) => of(UserActions.loadUserFailure({
             error: this.errorService.getErrorMessage(error)
@@ -343,54 +402,89 @@ export class UserEffects {
     )
   );
 
+  // loadUserMessagesThread$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(UserActions.loadUserMessagesThread),
+  //     switchMap(({ userName }) =>
+  //       this.api.getMessagesThread(userName).pipe(
+  //         map((apiMessages) => UserActions.loadUserMessagesThreadSuccess({
+  //           messages: apiMessages.map((apiMessage) => this.toMessage(apiMessage)),
+  //         })),
+  //         catchError((error) => of(UserActions.loadUserMessagesThreadFailure({
+  //           error: this.errorService.getErrorMessage(error)
+  //         })))
+  //       )
+  //     )
+  //   )
+  // );
+
   loadUserMessagesThread$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.loadUserMessagesThread),
-      switchMap(({ userName }) =>
-        this.api.getMessagesThread(userName).pipe(
-          map((apiMessages) => UserActions.loadUserMessagesThreadSuccess({
-            messages: apiMessages.map((apiMessage) => this.toMessage(apiMessage)),
-          })),
-          catchError((error) => of(UserActions.loadUserMessagesThreadFailure({
-            error: this.errorService.getErrorMessage(error)
-          })))
-        )
-      )
+      switchMap(({ userName }) => {
+        this.messageHub.createConnection(
+          this.sessionService.getToken() ?? '',
+          userName,
+        );
+        return this.messageHub.messageThread$
+          .pipe(
+            map((apiMessages) => UserActions.userMessagesThreadUpdate({
+              messages: apiMessages.map((apiMessage) => this.toMessage(apiMessage)),
+            })),
+            catchError((error) => of(UserActions.userMessagesThreadFailure({
+              error: this.errorService.getErrorMessage(error)
+            })))
+          );
+      })
     )
   );
+
+  // sendMessage$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(UserActions.sendMessage),
+  //     withLatestFrom(
+  //       this.store.pipe(select(UserSelectors.getMessages)),
+  //     ),
+  //     switchMap(([{ userName, message }, messages]) =>
+  //       this.api.sendMessage(userName, message).pipe(
+  //         map((apiMessage) => {
+  //           const updatedMessages = [
+  //             ...messages ?? [],
+  //             this.toMessage(apiMessage),
+  //           ]
+  //           return UserActions.sendMessageSuccess({ messages: updatedMessages })
+  //         }),
+  //         catchError((error) => of(UserActions.sendMessageFailure({
+  //           error: this.errorService.getErrorMessage(error)
+  //         })))
+  //       )
+  //     )
+  //   )
+  // );
 
   sendMessage$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.sendMessage),
-      withLatestFrom(
-        this.store.pipe(select(UserSelectors.getMessages)),
-      ),
-      switchMap(([{ userName, message }, messages]) =>
-        this.api.sendMessage(userName, message).pipe(
-          map((apiMessage) => {
-            const updatedMessages = [
-              ...messages ?? [],
-              this.toMessage(apiMessage),
-            ]
-            return UserActions.sendMessageSuccess({ messages: updatedMessages })
-          }),
+      switchMap(({ userName, message }) =>
+        this.messageHub.sendMessage(userName, message).pipe(
+          map(() => UserActions.sendMessageSuccess()),
           catchError((error) => of(UserActions.sendMessageFailure({
             error: this.errorService.getErrorMessage(error)
           })))
         )
       )
-    )
+    ),
   );
 
   deleteMessage$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(UserActions.deleteMesage),
+      ofType(UserActions.deleteMessage),
       withLatestFrom(
         this.store.pipe(select(UserSelectors.getMessages)),
       ),
       switchMap(([{ message }, messages]) =>
         this.api.deleteMessage(message.id).pipe(
-          map(() => UserActions.sendMessageSuccess({
+          map(() => UserActions.deleteMessageSuccess({
             messages: messages?.filter((msg) => msg.id !== message.id) ?? []
           })),
           catchError((error) => of(UserActions.deleteMesageFailure({
@@ -399,6 +493,29 @@ export class UserEffects {
         )
       )
     )
+  );
+
+  showMessageNotification$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(UserActions.showMessageNotification),
+        tap(({ username, knownAs }) => {
+          this.toastr.info(`${knownAs} sent you a message. Click here to open it`)
+            .onTap
+            .pipe(take(1))
+            .subscribe(() => this.router.navigate([`/members/${username}`], { queryParams: { tab: 'Messages' } }))
+        }),
+      ),
+    { dispatch: false },
+  );
+
+  stopUserMessagesThread$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(UserActions.stopUserMessagesThread),
+        tap(() => this.messageHub.stopConnection())
+      ),
+    { dispatch: false },
   );
 
   genericError$ = createEffect(
@@ -413,7 +530,7 @@ export class UserEffects {
           UserActions.loadPagedUserLikesFailure,
           UserActions.likeFailure,
           UserActions.loadPagedUserMessagesFailure,
-          UserActions.loadUserMessagesThreadFailure,
+          UserActions.userMessagesThreadFailure,
           UserActions.sendMessageFailure,
           UserActions.deleteMesageFailure,
           // drop here errors to be generically handled
@@ -429,9 +546,13 @@ export class UserEffects {
     private readonly api: HttpUserService,
     private readonly errorService: ErrorService,
     private readonly sessionService: UserSessionService,
+    private readonly messageHub: MessageHubService,
+    private readonly presenceHub: PresenceHubService,
+    private readonly toastr: ToastrService,
+    private readonly router: Router,
   ) {}
 
-  private toUser(apiUser: ApiMemberDto) {
+  private toUser(apiUser: ApiMemberDto, onlineUsers?: string[]) {
     return {
       id: apiUser.id,
       userName: apiUser.userName,
@@ -449,7 +570,8 @@ export class UserEffects {
         id: apiPhoto.id,
         url: apiPhoto.url,
         isMain: apiPhoto.isMain,
-      }))
+      })),
+      online: onlineUsers?.includes(apiUser.userName),
     } as User;
   }
 

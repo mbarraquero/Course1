@@ -3,6 +3,7 @@ using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Middleware;
+using API.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,10 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 // Log last active date
 builder.Services.AddScoped<LogUserActivity>();
+//...
+builder.Services.AddSignalR(opt => {
+    opt.EnableDetailedErrors = true;
+});
 
 var app = builder.Build();
 
@@ -45,7 +50,12 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // allow all for local run
-app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200"));
+app.UseCors(builder => builder
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowCredentials() // for SignalR
+    .WithOrigins("http://localhost:4200")
+);
 
 // use JWT for authorization
 app.UseAuthentication();
@@ -53,6 +63,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// SignalR
+app.MapHub<PresenceHub>("hubs/presence");
+app.MapHub<MessageHub>("hubs/message");
 
 // Seed data
 using var scope = app.Services.CreateScope();
@@ -63,6 +77,7 @@ try
     var userManager = services.GetRequiredService<UserManager<AppUser>>();
     var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
     await context.Database.MigrateAsync();
+    await context.Database.ExecuteSqlRawAsync("DELETE FROM [Connections]"); // Groups implementation not in Redis
     await Seed.SeedUsers(userManager, roleManager);
 }
 catch (Exception ex)

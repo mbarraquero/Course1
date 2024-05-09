@@ -54,6 +54,6 @@ export class ViewMessagesComponent {
 
   deleteMessage(event: Event, message: Message) {
     event.stopPropagation();
-    this.userFacade.deleteMesage(message);
+    this.userFacade.deleteMessage(message);
   }
 }

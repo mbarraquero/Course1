@@ -23,7 +23,9 @@
   </div>
   <div class="card-body">
     <h5 class="card-title">
-      <i class="fa fa-user me-2"></i>
+      <span [ngClass]="{ 'online text-success': member.online }">
+        <i class="fa fa-user me-2"></i>
+      </span>
       {{member.knownAs}}
     </h5>
     <p class="card-text">{{member.city}}</p>

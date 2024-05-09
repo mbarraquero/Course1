@@ -97,6 +97,20 @@ export const userReducer = createReducer(
     loading: state.loading - 1,
     error,
   })),
+  on(UserActions.updateOnlineUsers, (state, { users, selectedUser }) =>
+    userAdapter.updateMany(
+      users.map((user) => ({
+        id: user.id,
+        changes: {
+          online: user.online,
+        }
+      })),
+      {
+        ...state,
+        selectedUser,
+      },
+    )
+  ),
   on(UserActions.loadUser, (state) => ({
     ...state,
     loading: state.loading + 1,
@@ -240,41 +254,40 @@ export const userReducer = createReducer(
   })),
   on(UserActions.loadUserMessagesThread, (state) => ({
     ...state,
-    loading: state.loading + 1,
+    loading: 1,
     error: undefined,
     messages: undefined,
   })),
-  on(UserActions.loadUserMessagesThreadSuccess, (state, { messages }) => ({
+  on(UserActions.userMessagesThreadUpdate, (state, { messages }) => ({
     ...state,
-    loading: state.loading - 1,
+    loading: 0,
     messages,
   })),
-  on(UserActions.loadUserMessagesThreadFailure, (state, { error }) => ({
+  on(UserActions.userMessagesThreadFailure, (state, { error }) => ({
     ...state,
-    loading: state.loading - 1,
+    loading: 0,
     error,
   })),
   on(UserActions.sendMessage, (state) => ({
     ...state,
-    loading: state.loading + 1,
+    loading: 1,
     error: undefined,
   })),
-  on(UserActions.sendMessageSuccess, (state, { messages }) => ({
+  on(UserActions.sendMessageSuccess, (state) => ({
     ...state,
     loading: state.loading - 1,
-    messages,
   })),
   on(UserActions.sendMessageFailure, (state, { error }) => ({
     ...state,
     loading: state.loading - 1,
     error,
   })),
-  on(UserActions.deleteMesage, (state) => ({
+  on(UserActions.deleteMessage, (state) => ({
     ...state,
     loading: state.loading + 1,
     error: undefined,
   })),
-  on(UserActions.deleteMesageSuccess, (state, { messages }) => ({
+  on(UserActions.deleteMessageSuccess, (state, { messages }) => ({
     ...state,
     loading: state.loading - 1,
     messages,

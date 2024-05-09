@@ -10,13 +10,19 @@
       <div class="card-body">
         <h2 class="card-title">{{ member.knownAs }}</h2>
         <h5 class="card-text font-weight-bold">{{ member.age }}</h5>
+        <div class="card-text" *ngIf="member.online">
+          <p>
+            <i class="fa fa-user-circle text-success"></i>
+            Online now
+          </p>
+        </div>
         <div class="card-text">
           <strong>Location:</strong>
           <p>{{ member.city }}, {{ member.country }}</p>
         </div>
         <div class="card-text">
           <strong>Last active:</strong>
-          <p>{{ member.lastActive + 'z' | timeago }}</p>
+          <p>{{ member.lastActive | timeago }}</p>
         </div>
         <div class="card-text">
           <strong>Member Since:</strong>
@@ -41,7 +47,7 @@
       <p style="white-space:pre-wrap;">{{' '}}</p>
     </ng-template>
     <tabset #memberTabs>
-      <tab heading="About {{ member.knownAs }}">
+      <tab heading="About {{ member.knownAs }}" (selectTab)="onTabActivated()">
         <div class="m-3">
           <h4>Description</h4>
           <p *ngIf="member.introduction; else blankSpace">{{ member.introduction }}</p>
@@ -49,13 +55,13 @@
           <p *ngIf="member.lookingFor; else blankSpace">{{ member.lookingFor }}</p>
         </div>
       </tab>
-      <tab heading="Interests">
+      <tab heading="Interests" (selectTab)="onTabActivated()">
         <div class="m-3">
           <h4>Interests</h4>
           <p *ngIf="member.interests; else blankSpace">{{ member.interests }}</p>
         </div>
       </tab>
-      <tab heading="Photos" #photoTab="tab">
+      <tab heading="Photos" #photoTab="tab" (selectTab)="onTabActivated()">
         <ng-container *ngIf="(photoUrls$ | async)?.length; else noPhotos">
           <app-util-gallery
             *ngIf="photoTab.active"
@@ -68,7 +74,7 @@
           <p class="m-3">{{ member.knownAs }} has no photos to display at the moment</p>
         </ng-template>
       </tab>
-      <tab heading="Messages" (selectTab)="onMessagesSelect()">
+      <tab heading="Messages" (selectTab)="onTabActivated($event)">
         <app-members-messages
           [loading]="(loading$ | async) || false"
           [error]="error$ | async"

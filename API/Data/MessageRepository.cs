@@ -14,7 +14,15 @@ public interface IMessageRepository
     Task<Message> DeleteMessageAsync(string currentUserName,Message message);
     Task<Message> GetMessageAsync(int id);
     Task<PagedList<MessageDto>> GetMessagesForUserAsync(MessageParams messageParams);
-    Task<IEnumerable<MessageDto>> GetMessageThreadAsync(string currentUserName, string recipientUserName);
+    Task<(IEnumerable<MessageDto> messageDtos, IEnumerable<Message> message)> GetMessageThreadAsync(string currentUserName, string recipientUserName);
+    Task<IEnumerable<MessageDto>> SetMessagesAsReadAsync(IEnumerable<Message> messages, string currentUserName);
+    Task<Group> AddGroupAsync(string groupName);
+    Task<Connection> AddConnectionAsync(Group group, string connectionId, string currentUserName);
+    Task<Connection> RemoveConectionAsync(Connection conection);
+    Task<Connection> GetConnectionAsync(string connectionId);
+    Task<Group> GetMessageGroupAsync(string groupName);
+    Task<Group> GetMessageGroupForConnectionAsync(string connectionId);
+
 }
 
 public class MessageRepository : IMessageRepository
@@ -71,7 +79,7 @@ public class MessageRepository : IMessageRepository
         );
     }
 
-    public async Task<IEnumerable<MessageDto>> GetMessageThreadAsync(string currentUserName, string recipientUserName)
+    public async Task<(IEnumerable<MessageDto> messageDtos, IEnumerable<Message> message)> GetMessageThreadAsync(string currentUserName, string recipientUserName)
     {
         var messages = await _context.Messages
             .Include(m => m.Sender).ThenInclude(s => s.Photos)
@@ -83,18 +91,62 @@ public class MessageRepository : IMessageRepository
             )
             .OrderBy(m => m.MessageSent)
             .ToListAsync();
+        return (_mapper.Map<IEnumerable<MessageDto>>(messages), messages);
+    }
+
+    public async Task<IEnumerable<MessageDto>> SetMessagesAsReadAsync(IEnumerable<Message> messages, string currentUserName)
+    {
         var unreadMessages = messages
             .Where(m => m.DateRead == null && m.RecipientUsername == currentUserName)
             .ToList();
 
         Func<IEnumerable<Message>, IEnumerable<MessageDto>> mapFn = m => _mapper.Map<IEnumerable<MessageDto>>(m);
-        if (!unreadMessages.Any()) return mapFn(messages);
+        if (!unreadMessages.Any()) return mapFn(unreadMessages);
 
         foreach (var message in unreadMessages)
         {
-            message.DateRead = DateTime.Now;
+            message.DateRead = DateTime.UtcNow;
         }
-        return await SaveAll(messages, mapFn);
+        return await SaveAll(unreadMessages, mapFn);
+    }
+
+    public async Task<Group> AddGroupAsync(string groupName)
+    {
+        var group = new Group(groupName);
+        group = _context.Groups.Add(group).Entity;
+        return await SaveAll(group);
+    }
+
+    public async Task<Connection> AddConnectionAsync(Group group, string connectionId, string currentUserName) {
+        var connection = new Connection(connectionId, currentUserName);
+        group.Connections.Add(connection);
+        return await SaveAll(connection);
+    }
+
+    public async Task<Connection> RemoveConectionAsync(Connection conection)
+    {
+        var connection = _context.Remove(conection).Entity;
+        return await SaveAll(connection);
+    }
+
+    public async Task<Connection> GetConnectionAsync(string connectionId)
+    {
+        return await _context.Connections.FindAsync(connectionId);
+    }
+
+    public async Task<Group> GetMessageGroupAsync(string groupName)
+    {
+        return await _context.Groups
+            .Include(g => g.Connections)
+            .FirstOrDefaultAsync(g => g.Name == groupName);
+    }
+
+    public async Task<Group> GetMessageGroupForConnectionAsync(string connectionId)
+    {
+        return await _context.Groups
+            .Include(g => g.Connections)
+            .Where(g => g.Connections.Any(c => c.ConnectionId == connectionId))
+            .FirstOrDefaultAsync();
     }
 
     private async Task<T> SaveAll<T>(T entity) where T : new()

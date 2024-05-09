@@ -1,7 +1,8 @@
 import { Directive, Input, OnInit, ViewContainerRef, TemplateRef } from '@angular/core';
 import { take } from 'rxjs';
 
-import { ApiRole } from './user-session.models';
+import { ApiRole } from 'src/api-models';
+
 import { UserSessionService } from './user-session.service';
 
 @Directive({

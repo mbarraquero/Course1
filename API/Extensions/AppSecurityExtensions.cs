@@ -63,6 +63,20 @@ public static class AppSecurityExtensions
                     ValidateIssuer = false,
                     ValidateAudience = false,
                 };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"]; // from WS
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs")) // see Program.cs
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
         services.AddAuthorization(options =>
         {

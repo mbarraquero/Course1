@@ -1,5 +1,6 @@
 ﻿using API.Data;
 using API.Services;
+using API.SignalR;
 
 namespace API.Extensions;
 
@@ -12,6 +13,7 @@ public static class AppServicesExtensions
         services.AddScoped<ILikesRepository, LikesRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddSingleton<PresenceTracker>();
         return services;
     }
 }

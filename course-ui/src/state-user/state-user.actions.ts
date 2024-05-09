@@ -30,12 +30,20 @@ export const loadPagedUsers = createAction(
 );
 export const loadPagedUsersSuccess = createAction(
   prependLabel('Load Paged Users Success', 'api'),
-  props<{ users: User[]; pagination: Pagination; }>()
+  props<{ users: User[]; pagination: Pagination; onlineUsers: string[]; }>()
 );
 export const loadPagedUsersFailure = createAction(
   prependLabel('Load Paged Users Failure', 'api'),
   props<{ error: any; }>()
 );
+
+export const listenToUsersPresence = createAction(prependLabel('Listen to Users Presence'));
+export const updateOnlineUsers = createAction(
+  prependLabel('Update Online Users', 'api'),
+  props<{ onlineUsers: string[]; users: User[]; selectedUser?: User; }>()
+);
+
+export const listenToUserMessages = createAction(prependLabel('Listen to User Messages'));
 
 export const loadUser = createAction(
   prependLabel('Load User', 'page'),
@@ -151,37 +159,42 @@ export const loadUserMessagesThread = createAction(
   prependLabel('Load User Messages Thread', 'page'),
   props<{ userName: string; }>()
 );
-export const loadUserMessagesThreadSuccess = createAction(
-  prependLabel('Load User Messages Thread Success', 'api'),
+export const userMessagesThreadUpdate = createAction(
+  prependLabel('User Messages Thread Update', 'api'),
   props<{ messages: Message[]; }>()
 );
-export const loadUserMessagesThreadFailure = createAction(
-  prependLabel('Load User Messages Thread Failure', 'api'),
+export const userMessagesThreadFailure = createAction(
+  prependLabel('User Messages Thread Failure', 'api'),
   props<{ error: any; }>()
 );
-
 export const sendMessage = createAction(
   prependLabel('Send Message', 'page'),
   props<{ userName: string; message: string; }>()
 );
-export const sendMessageSuccess = createAction(
-  prependLabel('Send Message Success', 'api'),
-  props<{ messages: Message[]; }>()
-);
+export const sendMessageSuccess = createAction(prependLabel('Send Message Success', 'api'));
 export const sendMessageFailure = createAction(
   prependLabel('Send Message Failure', 'api'),
   props<{ error: any; }>()
 );
 
-export const deleteMesage = createAction(
+export const deleteMessage = createAction(
   prependLabel('Delete Message', 'page'),
   props<{ message: Message; }>()
 );
-export const deleteMesageSuccess = createAction(
+export const deleteMessageSuccess = createAction(
   prependLabel('Delete Message Success', 'api'),
   props<{ messages: Message[]; }>()
 );
 export const deleteMesageFailure = createAction(
   prependLabel('Delete Message Failure', 'api'),
   props<{ error: any; }>()
+);
+
+export const showMessageNotification = createAction(
+  prependLabel('Show Message Notification', 'api'),
+  props<{ username: string; knownAs: string; }>()
+);
+
+export const stopUserMessagesThread = createAction(
+  prependLabel('Stop User Messages Thread', 'page')
 );

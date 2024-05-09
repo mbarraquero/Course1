@@ -1,9 +1,9 @@
-import { ApiUserOrderBy } from './api/http-user.models';
+import { ApiUserOrderBy } from 'src/api-models';
 export {
   ApiUserOrderBy as UserOrderBy,
   ApiLikesPredicate as LikesPredicate,
   ApiMessagesContainer as MessagesContainer,
-} from './api/http-user.models';
+} from 'src/api-models';
 
 export interface User {
   id: number;
@@ -19,6 +19,7 @@ export interface User {
   city: string;
   country: string;
   photos: Photo[];
+  online: boolean;
 }
 
 export interface Photo {

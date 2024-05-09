@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map } from 'rxjs';
 
-import { ApiUserDto } from './http-user-session.models';
+import { ApiRole, ApiUserDto } from 'src/api-models';
+import { PresenceHubService } from 'src/hub';
+
 import { HttpUserSessionService } from './http-user-session.service';
 import { LocalStorageKeys, LocalStorageService } from './local-storage.service';
-import { ApiRole } from './user-session.models';
 
 @Injectable()
 export class UserSessionService {
@@ -29,13 +30,17 @@ export class UserSessionService {
   constructor(
     private readonly api: HttpUserSessionService,
     private readonly localStorage: LocalStorageService,
-  ) { }
+    private readonly presenceHub: PresenceHubService,
+  ) {}
 
   init() {
     this.loadingSubj.next(true);
     const user = this.localStorage.getObj<ApiUserDto>(LocalStorageKeys.user);
     const token = this.localStorage.get(LocalStorageKeys.authToken);
-    if (user && token) this.userSubj.next(user);
+    if (user && token) {
+      this.userSubj.next(user);
+      this.presenceHub.createConnection(token);
+    }
     this.loadedSubj.next(true);
     this.loadingSubj.next(false);
   }
@@ -70,6 +75,7 @@ export class UserSessionService {
     this.localStorage.remove(LocalStorageKeys.user);
     this.localStorage.remove(LocalStorageKeys.authToken);
     this.userSubj.next(undefined);
+    this.presenceHub.stopConnection();
   }
 
   getToken() {
@@ -93,6 +99,7 @@ export class UserSessionService {
     this.localStorage.saveObj(LocalStorageKeys.user, user);
     this.localStorage.save(LocalStorageKeys.authToken, user.token);
     this.userSubj.next(user);
+    this.presenceHub.createConnection(user.token);
     this.loadingSubj.next(false);
   }
 

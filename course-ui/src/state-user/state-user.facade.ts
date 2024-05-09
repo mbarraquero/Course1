@@ -93,7 +93,11 @@ export class StateUserFacade {
     this.store.dispatch(UserActions.sendMessage({ userName, message }));
   }
 
-  deleteMesage(message: Message) {
-    this.store.dispatch(UserActions.deleteMesage({ message }));
+  deleteMessage(message: Message) {
+    this.store.dispatch(UserActions.deleteMessage({ message }));
+  }
+
+  stopUserMessagesThread() {
+    this.store.dispatch(UserActions.stopUserMessagesThread());
   }
 }

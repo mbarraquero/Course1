@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TabsetComponent } from 'ngx-bootstrap/tabs';
-import { first, map, Subject, takeUntil, withLatestFrom } from 'rxjs';
+import { TabDirective, TabsetComponent } from 'ngx-bootstrap/tabs';
+import { combineLatest, distinctUntilChanged, filter, map, Subject, takeUntil, withLatestFrom } from 'rxjs';
 
 import { StateUserFacade, User } from 'src/state-user';
 
@@ -38,14 +38,20 @@ export class MembersDetailsComponent implements OnInit, OnDestroy {
         if (!this.username) return;
         this.userFacade.loadUser(this.username);
       });
-    this.member$
-      .pipe(
-        first((member) => !!member),
-        withLatestFrom(this.route.queryParams)
-      )
-      .subscribe(([_, paramMap]) => {
-        const tab = paramMap['tab'];
-        if (!tab) return;
+    combineLatest([
+      this.member$.pipe(
+        filter((member) => !!member),
+        map((member) => member?.id),
+        distinctUntilChanged(),
+      ),
+      this.route.queryParams.pipe(
+        map((paramMap) => paramMap['tab']),
+        distinctUntilChanged(),
+        filter((tab) => !!tab),
+      ),
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([_, tab]) => {
         setTimeout(() => { // wait for tabs to be rendered
           this.selectTab(tab);
           this.router.navigate([], { queryParams: {} });
@@ -56,6 +62,7 @@ export class MembersDetailsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.messagesLoaded) this.userFacade.stopUserMessagesThread();
   }
 
   selectTab(heading: string) {
@@ -64,10 +71,14 @@ export class MembersDetailsComponent implements OnInit, OnDestroy {
     selectedTab.active = true;
   }
 
-  onMessagesSelect() {
-    if (this.messagesLoaded || !this.username) return;
-    this.userFacade.loadUserMessagesThread(this.username);
-    this.messagesLoaded = true;
+  onTabActivated(data?: TabDirective) {
+    if (data?.heading === 'Messages') {
+      this.userFacade.loadUserMessagesThread(this.username ?? '');
+      this.messagesLoaded = true;
+    } else if (this.messagesLoaded) {
+      this.userFacade.stopUserMessagesThread();
+      this.messagesLoaded = false;
+    }
   }
 
   onMessageSent(message: string, member: User) {

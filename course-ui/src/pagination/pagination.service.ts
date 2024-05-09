@@ -1,9 +1,10 @@
 import { HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
+import { ApiPageParams } from 'src/api-models';
 import { propertyOf } from 'src/util-helpers';
 
-import { ApiPageParams, PaginatedResult } from './pagination.models';
+import { PaginatedResult } from './pagination.models';
 
 @Injectable()
 export class PaginationService {

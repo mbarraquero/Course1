@@ -3,9 +3,9 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
 
+import { ApiUsersWithRoles } from 'src/api-models';
 import { ErrorService } from 'src/error';
 
-import { ApiUsersWithRoles } from './api/http-admin.models';
 import { HttpUserService } from './api/http-admin.service';
 
 import * as AdminActions from './state-admin.actions';

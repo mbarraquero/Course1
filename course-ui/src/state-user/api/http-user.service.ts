@@ -2,10 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs';
 
-import { environment } from 'src/environments/environment';
-import { PaginationService } from 'src/pagination';
-import { propertyOf } from 'src/util-helpers';
-
 import {
   ApiLikeDto,
   ApiLikesPredicate,
@@ -14,8 +10,12 @@ import {
   ApiMessageDto,
   ApiMessagesContainer,
   ApiUserParams,
-  GetUsersParams,
-} from './http-user.models';
+} from 'src/api-models';
+import { environment } from 'src/environments/environment';
+import { PaginationService } from 'src/pagination';
+import { propertyOf } from 'src/util-helpers';
+
+import { GetUsersParams } from './http-user.models';
 
 @Injectable()
 export class HttpUserService {

@@ -1,9 +1,8 @@
 import { HttpBackend, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
+import { ApiLoginDto, ApiRegisterDto, ApiUserDto } from 'src/api-models';
 import { environment } from 'src/environments/environment';
-
-import { ApiLoginDto, ApiRegisterDto, ApiUserDto } from './http-user-session.models';
 
 @Injectable()
 export class HttpUserSessionService {

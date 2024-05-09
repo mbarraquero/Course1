@@ -17,7 +17,7 @@ export class MembersMessagesComponent implements OnChanges {
   message = '';
 
   ngOnChanges(changes: SimpleChanges) {
-    if (!changes['loading'].currentValue && changes['loading'].previousValue) {
+    if (!changes['loading']?.currentValue && changes['loading']?.previousValue) {
       if (!this.error) this.message = '';
     }
   }

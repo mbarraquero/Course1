@@ -19,4 +19,13 @@
       }
     }
   }
+
+  span.online {
+    animation: blink 0.5s alternate infinite;
+  }
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  100% { opacity: .5; }
 }
