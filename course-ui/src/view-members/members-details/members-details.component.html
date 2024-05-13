@@ -74,8 +74,9 @@
           <p class="m-3">{{ member.knownAs }} has no photos to display at the moment</p>
         </ng-template>
       </tab>
-      <tab heading="Messages" (selectTab)="onTabActivated($event)">
+      <tab heading="Messages" #messageTab="tab" (selectTab)="onTabActivated($event)">
         <app-members-messages
+          *ngIf="messageTab.active"
           [loading]="(loading$ | async) || false"
           [error]="error$ | async"
           [username]="username"

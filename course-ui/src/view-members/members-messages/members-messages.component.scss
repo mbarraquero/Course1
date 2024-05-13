@@ -1,4 +1,8 @@
-.profile-pic {
-  width: 50px;
-  height: 50px;
+.chat {
+  max-height: calc(100vh - 16rem);
+
+  .profile-pic {
+    width: 50px;
+    height: 50px;
+  }
 }

@@ -14,8 +14,8 @@ public interface IMessageRepository
     Task<Message> DeleteMessageAsync(string currentUserName,Message message);
     Task<Message> GetMessageAsync(int id);
     Task<PagedList<MessageDto>> GetMessagesForUserAsync(MessageParams messageParams);
-    Task<(IEnumerable<MessageDto> messageDtos, IEnumerable<Message> message)> GetMessageThreadAsync(string currentUserName, string recipientUserName);
-    Task<IEnumerable<MessageDto>> SetMessagesAsReadAsync(IEnumerable<Message> messages, string currentUserName);
+    Task<IEnumerable<MessageDto>> GetMessageThreadAsync(string currentUserName, string recipientUserName);
+    Task<IEnumerable<MessageDto>> SetMessagesAsReadAsync(string currentUserName, string recipientUserName);
     Task<Group> AddGroupAsync(string groupName);
     Task<Connection> AddConnectionAsync(Group group, string connectionId, string currentUserName);
     Task<Connection> RemoveConectionAsync(Connection conection);
@@ -25,14 +25,12 @@ public interface IMessageRepository
 
 }
 
-public class MessageRepository : IMessageRepository
+public class MessageRepository : BaseRepository, IMessageRepository
 {
-    private readonly DataContext _context;
     private readonly IMapper _mapper;
 
-    public MessageRepository(DataContext context, IMapper mapper)
+    public MessageRepository(DataContext context, IMapper mapper) : base(context)
     {
-        _context = context;
         _mapper = mapper;
     }
 
@@ -79,25 +77,18 @@ public class MessageRepository : IMessageRepository
         );
     }
 
-    public async Task<(IEnumerable<MessageDto> messageDtos, IEnumerable<Message> message)> GetMessageThreadAsync(string currentUserName, string recipientUserName)
+    public async Task<IEnumerable<MessageDto>> GetMessageThreadAsync(string currentUserName, string recipientUserName)
     {
-        var messages = await _context.Messages
-            .Include(m => m.Sender).ThenInclude(s => s.Photos)
-            .Include(m => m.Recipient).ThenInclude(s => s.Photos)
-            .Where(
-                m =>
-                    m.RecipientUsername == currentUserName && m.SenderUsername == recipientUserName ||
-                    m.RecipientUsername == recipientUserName && m.SenderUsername == currentUserName && !m.SenderDeleted
-            )
-            .OrderBy(m => m.MessageSent)
+        return await GetMessageThreadQuery(currentUserName, recipientUserName)
+            .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
-        return (_mapper.Map<IEnumerable<MessageDto>>(messages), messages);
     }
 
-    public async Task<IEnumerable<MessageDto>> SetMessagesAsReadAsync(IEnumerable<Message> messages, string currentUserName)
+    public async Task<IEnumerable<MessageDto>> SetMessagesAsReadAsync(string currentUserName, string recipientUserName)
     {
-        var unreadMessages = messages
+        var unreadMessages = GetMessageThreadQuery(currentUserName, recipientUserName)
             .Where(m => m.DateRead == null && m.RecipientUsername == currentUserName)
+            .Include(m => m.Sender).ThenInclude(r => r.Photos)
             .ToList();
 
         Func<IEnumerable<Message>, IEnumerable<MessageDto>> mapFn = m => _mapper.Map<IEnumerable<MessageDto>>(m);
@@ -108,6 +99,18 @@ public class MessageRepository : IMessageRepository
             message.DateRead = DateTime.UtcNow;
         }
         return await SaveAll(unreadMessages, mapFn);
+    }
+
+    private IQueryable<Message> GetMessageThreadQuery(string currentUserName, string recipientUserName)
+    {
+        return _context.Messages
+            .Where(
+                m =>
+                    m.RecipientUsername == currentUserName && m.SenderUsername == recipientUserName ||
+                    m.RecipientUsername == recipientUserName && m.SenderUsername == currentUserName && !m.SenderDeleted
+            )
+            .OrderBy(m => m.MessageSent)
+            .AsQueryable();
     }
 
     public async Task<Group> AddGroupAsync(string groupName)
@@ -147,17 +150,5 @@ public class MessageRepository : IMessageRepository
             .Include(g => g.Connections)
             .Where(g => g.Connections.Any(c => c.ConnectionId == connectionId))
             .FirstOrDefaultAsync();
-    }
-
-    private async Task<T> SaveAll<T>(T entity) where T : new()
-    {
-        var updates = await _context.SaveChangesAsync();
-        return updates > 0 ? entity : default;
-    }
-
-    private async Task<U> SaveAll<T, U>(T entity, Func<T, U> map)
-    {
-        var updates = await _context.SaveChangesAsync();
-        return updates > 0 ? map(entity) : default;
     }
 }

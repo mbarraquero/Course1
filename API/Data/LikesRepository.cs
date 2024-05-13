@@ -14,13 +14,10 @@ public interface ILikesRepository
     Task<UserLike> AddNewLikeAsync(AppUser sourceUser, int targetUserId);
 }
 
-public class LikesRepository : ILikesRepository
+public class LikesRepository : BaseRepository, ILikesRepository
 {
-    private readonly DataContext _context;
-
-    public LikesRepository(DataContext context)
+    public LikesRepository(DataContext context) : base(context)
     {
-        _context = context;
     }
 
     public async Task<UserLike> GetUserLikeAsync(int sourceUserId, int targetUserId)
@@ -78,11 +75,5 @@ public class LikesRepository : ILikesRepository
         };
         sourceUser.LikedUsers.Add(userLike);
         return await SaveAll(userLike);
-    }
-
-    private async Task<T> SaveAll<T>(T entity) where T : new()
-    {
-        var updates = await _context.SaveChangesAsync();
-        return updates > 0 ? entity : default;
     }
 }

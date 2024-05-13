@@ -3,7 +3,12 @@
     <ng-template #noMessages>
       <h4 class="text-center">No messages yet... say hi by using the message box below</h4>
     </ng-template>
-    <ul *ngIf="messages?.length; else noMessages" class="chat p-1">
+    <ul
+      *ngIf="messages?.length; else noMessages"
+      #chatScroll
+      [scrollTop]="scrollTo"
+      class="chat p-1 overflow-auto"
+    >
       <li
         *ngFor="let message of messages; trackBy: trackByFn"
         class="d-block border-bottom border-light mt-1"

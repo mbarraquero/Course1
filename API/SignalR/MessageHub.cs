@@ -30,10 +30,10 @@ public class MessageHub : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
         var _ = await AddToGroup(groupName) ?? throw new HubException("Unable to add to group");
 
-        var (messages, apiMessages) = await _messageRepository.GetMessageThreadAsync(thisUsername, otherUsername);
+        var messages = await _messageRepository.GetMessageThreadAsync(thisUsername, otherUsername);
         await Clients.Caller.SendAsync("ReceiveMessageThread", messages);
 
-        var readMessages = await _messageRepository.SetMessagesAsReadAsync(apiMessages, thisUsername)
+        var readMessages = await _messageRepository.SetMessagesAsReadAsync(thisUsername, otherUsername)
             ?? throw new HubException("Unable to set messages as read");
 
         if (readMessages.ToList().Count > 0) await Clients.Group(groupName).SendAsync("MessagesRead", readMessages);

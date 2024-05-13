@@ -7,6 +7,7 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import { TimeagoModule } from "ngx-timeago";
 
+import { UtilConfirmDialogModule } from 'src/util-confirm-dialog';
 import { UtilGalleryComponent } from 'src/util-gallery';
 import { UtilLoaderComponent } from 'src/util-loader';
 import { UtilMemberCardComponent } from 'src/util-member-card';
@@ -58,6 +59,7 @@ const routes: Routes = [
     PaginationModule.forRoot(),
     TabsModule.forRoot(),
     TimeagoModule.forRoot(),
+    UtilConfirmDialogModule,
     UtilGalleryComponent,
     UtilLoaderComponent,
     UtilMemberCardComponent,

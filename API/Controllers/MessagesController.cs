@@ -61,8 +61,8 @@ public class MessagesController : BaseApiController
     public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessageThread(string username)
     {
         var currentUserName = User.GetUsername();
-        var (thread, apiThread) = await _messageRepository.GetMessageThreadAsync(currentUserName, username);
-        await _messageRepository.SetMessagesAsReadAsync(apiThread, currentUserName);
+        var thread = await _messageRepository.GetMessageThreadAsync(currentUserName, username);
+        await _messageRepository.SetMessagesAsReadAsync(currentUserName, username);
         return Ok(thread);
     }
 

@@ -11,6 +11,7 @@ public interface IUserRepository
 {
     Task<AppUser> GetUserByIdNoPhotosAsync(int id);
     Task<AppUser> GetUserByUsernameAsync(string username);
+    Task<string> GetUserGenderByUsernameAsync(string username);
     Task<MemberDto> GetMemberByUsernameAsync(string username);
     Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
     Task<AppUser> UpdateUserAsync(AppUser user);
@@ -21,14 +22,12 @@ public interface IUserRepository
     Task<Photo> DeletePhotoAsync(AppUser user, Photo photo);
 }
 
-public class UserRepository : IUserRepository
+public class UserRepository : BaseRepository, IUserRepository
 {
-    private readonly DataContext _context;
     private readonly IMapper _mapper;
 
-    public UserRepository(DataContext context, IMapper mapper)
+    public UserRepository(DataContext context, IMapper mapper) : base(context)
     {
-        _context = context;
         _mapper = mapper;
     }
 
@@ -50,6 +49,14 @@ public class UserRepository : IUserRepository
     //        .Include(p => p.Photos)
     //        .ToListAsync();
     //}
+
+    public async Task<string> GetUserGenderByUsernameAsync(string username)
+    {
+        return await _context.Users
+            .Where(u => u.UserName == username)
+            .Select(u => u.Gender)
+            .FirstOrDefaultAsync();
+    }
 
     public async Task<MemberDto> GetMemberByUsernameAsync(string username)
     {
@@ -136,17 +143,5 @@ public class UserRepository : IUserRepository
     {
         user.Photos.Remove(photo);
         return await SaveAll(photo);
-    }
-
-    private async Task<T> SaveAll<T>(T entity) where T : new()
-    {
-        var updates = await _context.SaveChangesAsync();
-        return updates > 0 ? entity : default;
-    }
-
-    private async Task<U> SaveAll<T, U>(T entity, Func<T, U> map)
-    {
-        var updates = await _context.SaveChangesAsync();
-        return updates > 0 ? map(entity) : default;
     }
 }

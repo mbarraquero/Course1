@@ -27,7 +27,7 @@ export class UtilFileUploadService {
     if (modalRef.content)
       modalRef.content.uploader = this.initializeUploader(newPhoto$);
     modalRef.onHidden?.subscribe(() =>
-      newPhoto$?.complete());
+      newPhoto$.complete());
     return newPhoto$;
   }
 

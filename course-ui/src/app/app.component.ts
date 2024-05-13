@@ -10,7 +10,6 @@ import { UserSessionService } from 'src/user-session';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'course-ui';
 
   constructor(
     private readonly userSessionService: UserSessionService,
