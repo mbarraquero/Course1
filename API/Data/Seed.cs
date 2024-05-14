@@ -36,7 +36,7 @@ public class Seed
         }
         //await context.SaveChangesAsync();
 
-        var admin = new AppUser { UserName = "admin" };
+        var admin = new AppUser { UserName = "admin", Gender = "male" };
         await userManager.CreateAsync(admin, "Pa$$w0rd");
         await userManager.AddToRolesAsync(admin, ["Admin", "Moderator"]);
     }

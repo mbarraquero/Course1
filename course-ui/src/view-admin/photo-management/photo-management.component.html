@@ -1,1 +1,25 @@
-<p>photo-management works!</p>
+<app-util-loader *ngIf="loading$ | async"></app-util-loader>
+<div class="row m-3">
+  <div class="col-2" *ngFor="let photo of photos$ | async">
+    <div class="card">
+      <img src="{{ photo.url }}" class="card-img-top img-thumbnail" alt="Photo from {{ photo.username }}">
+      <div class="card-body text-center">
+        <h5 class="card-title">{{ photo.username }}</h5>
+        <div class="row">
+          <button
+            class="btn btn-sm btn-success col-6"
+            (click)="approve(photo)"
+          >
+            Approve
+          </button>
+          <button
+            class="btn btn-sm btn-danger col-6"
+            (click)="reject(photo)"
+          >
+            Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

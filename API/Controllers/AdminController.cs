@@ -1,4 +1,5 @@
-﻿using API.Entities;
+﻿using API.Data;
+using API.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +10,12 @@ namespace API.Controllers;
 public class AdminController :  BaseApiController
 {
     private readonly UserManager<AppUser> _userManager;
+    private readonly IPhotoRepository _photoRepository;
 
-    public AdminController(UserManager<AppUser> userManager)
+    public AdminController(UserManager<AppUser> userManager, IPhotoRepository photoRepository)
     {
         _userManager = userManager;
+        _photoRepository = photoRepository;
     }
 
     [Authorize(Policy = "RequireAdminRole")]
@@ -54,8 +57,34 @@ public class AdminController :  BaseApiController
 
     [Authorize(Policy = "ModeratePhotoRole")]
     [HttpGet("photos-to-moderate")]
-    public ActionResult GetPhotosForModetation()
+    public async Task<ActionResult> GetPhotosForModeration()
     {
-        return Ok("admin or mod");
+        return Ok(await _photoRepository.GetUnapprovedPhotos());
+    }
+
+    [Authorize(Policy = "ModeratePhotoRole")]
+    [HttpPut("approve-photo/{photoId}")]
+    public async Task<ActionResult> ApprovePhoto(int photoId)
+    {
+        var photo = await _photoRepository.GetPhotoByIdAsync(photoId);
+        if (photo == null) return NotFound();
+
+        var result = await _photoRepository.ApprovePhotoAsync(photo);
+        if (result == null) return BadRequest("Unable to approve photo");
+
+        return Ok(result);
+    }
+
+    [Authorize(Policy = "ModeratePhotoRole")]
+    [HttpDelete("remove-photo/{photoId}")]
+    public async Task<ActionResult> RemovePhoto(int photoId)
+    {
+        var photo = await _photoRepository.GetPhotoByIdAsync(photoId);
+        if (photo == null) return NotFound();
+
+        var result = await _photoRepository.DeletePhotoAsync(photo);
+        if (result == null) return BadRequest("Unable to remove photo");
+
+        return Ok(result);
     }
 }

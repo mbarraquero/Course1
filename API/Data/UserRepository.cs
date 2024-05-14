@@ -12,7 +12,7 @@ public interface IUserRepository
     Task<AppUser> GetUserByIdNoPhotosAsync(int id);
     Task<AppUser> GetUserByUsernameAsync(string username);
     Task<string> GetUserGenderByUsernameAsync(string username);
-    Task<MemberDto> GetMemberByUsernameAsync(string username);
+    Task<MemberDto> GetMemberByUsernameAsync(string username, bool isCurrentUser = false);
     Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
     Task<AppUser> UpdateUserAsync(AppUser user);
     Task<MemberDto> UpdateMemberAsync(AppUser user, MemberUpdateDto member);
@@ -58,10 +58,12 @@ public class UserRepository : BaseRepository, IUserRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<MemberDto> GetMemberByUsernameAsync(string username)
+    public async Task<MemberDto> GetMemberByUsernameAsync(string username, bool isCurrentUser = false)
     {
-        return await _context.Users
-            .Where(x => x.UserName.ToLower() == username.ToLower())
+        var query = _context.Users.AsQueryable();
+        if (isCurrentUser) query = query.IgnoreQueryFilters(); // include awaiting approval photos
+        return await query
+            .Where(u => u.UserName.ToLower() == username.ToLower())
             .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
             .SingleOrDefaultAsync();
     }
@@ -121,7 +123,6 @@ public class UserRepository : BaseRepository, IUserRepository
             Url = url,
             PublicId = publicId
         };
-        if (user.Photos.Count == 0) photo.IsMain = true;
         user.Photos.Add(photo);
         return await SaveAll(photo, (p) => _mapper.Map<PhotoDto>(p));
     }

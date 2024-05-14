@@ -2,7 +2,7 @@ import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import { createReducer, on } from '@ngrx/store';
 
 import * as AdminActions from './state-admin.actions';
-import { UserWithRole } from './state-admin.models';
+import { PhotoForApproval, UserWithRole } from './state-admin.models';
 
 export const adminFeatureKey = 'admin';
 
@@ -10,6 +10,7 @@ export interface State extends EntityState<UserWithRole> {
   loaded: boolean;
   loading: number;
   error?: any;
+  photosToModerate?: PhotoForApproval[],
 };
 
 export interface AdminPartialState {
@@ -69,6 +70,52 @@ export const adminReducer = createReducer(
     ) 
   ),
   on(AdminActions.updateUserRolesFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(AdminActions.loadPhotosToModerate, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+    photosToModerate: undefined,
+  })),
+  on(AdminActions.loadPhotosToModerateSuccess, (state, { photosToModerate }) => ({
+    ...state,
+    loading: state.loading - 1,
+    photosToModerate,
+  })),
+  on(AdminActions.loadPhotosToModerateFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(AdminActions.approvePhotoToModerate, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(AdminActions.approvePhotoToModerateSuccess, (state, { photosToModerate }) => ({
+    ...state,
+    loading: state.loading - 1,
+    photosToModerate,
+  })),
+  on(AdminActions.approvePhotoToModerateFailure, (state, { error }) => ({
+    ...state,
+    loading: state.loading - 1,
+    error,
+  })),
+  on(AdminActions.rejectPhotoToModerate, (state) => ({
+    ...state,
+    loading: state.loading + 1,
+    error: undefined,
+  })),
+  on(AdminActions.rejectPhotoToModerateSuccess, (state, { photosToModerate }) => ({
+    ...state,
+    loading: state.loading - 1,
+    photosToModerate,
+  })),
+  on(AdminActions.rejectPhotoToModerateFailure, (state, { error }) => ({
     ...state,
     loading: state.loading - 1,
     error,

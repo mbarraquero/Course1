@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { ApiUsersWithRoles } from 'src/api-models';
+import { ApiUsersWithRoles, ApiPhotoForApprovalDto, ApiPhotoDto } from 'src/api-models';
 import { environment } from 'src/environments/environment';
 
 @Injectable()
@@ -22,5 +22,20 @@ export class HttpUserService {
     let params = new HttpParams()
       .append('roles', userUpdate.roles.join(','));
     return this.http.post<string[]>(requestUrl, {}, { params });
+  }
+
+  getPhotosToModerate() {
+    const requestUrl = this.apiUrl + 'Admin/photos-to-moderate';
+    return this.http.get<ApiPhotoForApprovalDto[]>(requestUrl);
+  }
+
+  approvePhoto(photoId: number) {
+    const requestUrl = this.apiUrl + 'Admin/approve-photo/' + photoId;
+    return this.http.put<ApiPhotoDto>(requestUrl, {});
+  }
+
+  removePhoto(photoId: number) {
+    const requestUrl = this.apiUrl + 'Admin/remove-photo/' + photoId;
+    return this.http.delete<ApiPhotoDto>(requestUrl);
   }
 }

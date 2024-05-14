@@ -13,11 +13,13 @@ public class UsersController : BaseApiController
 {
     private readonly IUserRepository _repository;
     private readonly IPhotoService _photoService;
+    private readonly IPhotoRepository _photoRepository;
 
-    public UsersController(IUserRepository repository, IPhotoService photoService)
+    public UsersController(IUserRepository repository, IPhotoService photoService, IPhotoRepository photoRepository)
     {
         _repository = repository;
         _photoService = photoService;
+        _photoRepository = photoRepository;
     }
 
     [HttpGet]
@@ -39,7 +41,8 @@ public class UsersController : BaseApiController
     [HttpGet("{username}")]
     public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
-        return await _repository.GetMemberByUsernameAsync(username);
+        var isCurrentUser = username.ToLower() == User.GetUsername().ToLower();
+        return await _repository.GetMemberByUsernameAsync(username, isCurrentUser);
     }
 
     [HttpPut]
@@ -79,7 +82,7 @@ public class UsersController : BaseApiController
         var user = await _repository.GetUserByUsernameAsync(User.GetUsername());
         if (user == null) return NotFound();
 
-        var newMainPhoto = _repository.GetPhotoById(user, photoId);
+        var newMainPhoto = _repository.GetPhotoById(user, photoId); // photo needs to be approved
         if (newMainPhoto == null) return NotFound();
         if (newMainPhoto.IsMain) return BadRequest("Photo is already main");
 
@@ -95,7 +98,7 @@ public class UsersController : BaseApiController
         var user = await _repository.GetUserByUsernameAsync(User.GetUsername());
         if (user == null) return NotFound();
 
-        var photo = _repository.GetPhotoById(user, photoId);
+        var photo = await _photoRepository.GetPhotoByIdAsync(photoId); // include awaiting approval photos
         if (photo == null) return NotFound();
         if (photo.IsMain) return BadRequest("Photo is main");
 

@@ -6,3 +6,10 @@ export interface ApiUsersWithRoles {
   username: string;
   roles: ApiRole[],
 }
+
+export interface ApiPhotoForApprovalDto
+{
+    id: number;
+    username: string;
+    url: string;
+}

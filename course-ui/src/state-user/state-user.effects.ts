@@ -570,6 +570,7 @@ export class UserEffects {
         id: apiPhoto.id,
         url: apiPhoto.url,
         isMain: apiPhoto.isMain,
+        isApproved: apiPhoto.isApproved,
       })),
       online: onlineUsers?.includes(apiUser.userName),
     } as User;

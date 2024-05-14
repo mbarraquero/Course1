@@ -81,12 +81,23 @@
         <div class="row m-3">
           <div class="col-2" *ngFor="let photo of member.photos">
             <div class="card">
-              <img src="{{ photo.url }}" class="card-img-top img-thumbnail" alt="Photo from {{ member.knownAs }}">
+              <img
+                src="{{ photo.url }}"
+                class="card-img-top img-thumbnail"
+                [ngClass]="{ 'opacity-25': !photo.isApproved }"
+                alt="Photo from {{ member.knownAs }}"
+              >
+              <h5
+                *ngIf="!photo.isApproved"
+                class="position-absolute text-center mt-3 text-danger"
+              >
+                Awaiting approval
+              </h5>
               <div class="card-body text-center row">
                 <button
                   class="btn btn-sm col-8"
-                  [ngClass]="photo.isMain ? 'btn-success active' : 'btn-outline-success'"
-                  [disabled]="photo.isMain"
+                  [ngClass]="photo.isMain ? 'btn-success active' : photo.isApproved ? 'btn-outline-success' : 'btn-outline-secondary'"
+                  [disabled]="photo.isMain || !photo.isApproved"
                   (click)="setMainPhoto(photo)"
                 >
                   Main

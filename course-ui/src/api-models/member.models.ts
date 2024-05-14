@@ -21,6 +21,7 @@ export interface ApiPhotoDto {
   id: number;
   url: string;
   isMain: boolean;
+  isApproved: boolean;
 }
 
 export interface ApiMemberUpdateDto {

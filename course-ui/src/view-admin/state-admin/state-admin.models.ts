@@ -6,3 +6,9 @@ export interface UserWithRole {
   username: string;
   roles: Role[],
 }
+
+export interface PhotoForApproval {
+    id: number;
+    username: string;
+    url: string;
+}

@@ -7,6 +7,7 @@ import { TabsModule } from 'ngx-bootstrap/tabs';
 
 import { UserSessionModule, UserSessionService } from 'src/user-session';
 import { UtilLoaderComponent } from 'src/util-loader';
+import { StateUserModule } from 'src/state-user';
 
 import { PhotoManagementComponent } from './photo-management/photo-management.component';
 import { StateAdminModule } from './state-admin';
@@ -32,6 +33,7 @@ import { ViewAdminComponent } from './view-admin.component';
     TabsModule.forRoot(),
     UserSessionModule,
     UtilLoaderComponent,
+    StateUserModule,
     StateAdminModule,
   ],
   providers: [

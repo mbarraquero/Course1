@@ -14,6 +14,7 @@ public class DataContext : IdentityDbContext<AppUser, AppRole, int,
     }
 
     //public DbSet<AppUser> Users { get; set; } // already in IdentityDbContext
+    public DbSet<Photo> Photos { get; set; }
     public DbSet<UserLike> Likes { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<Group> Groups { get; set; }
@@ -34,6 +35,9 @@ public class DataContext : IdentityDbContext<AppUser, AppRole, int,
             .WithOne(ur => ur.Role)
             .HasForeignKey(ur => ur.RoleId)
             .IsRequired();
+
+        builder.Entity<Photo>()
+            .HasQueryFilter(p => p.IsApproved);
 
         builder.Entity<UserLike>()
             .HasKey(k => new { k.SourceUserId, k.TargetUserId });
