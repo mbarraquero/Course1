@@ -1,7 +1,7 @@
 <div class="card">
   <div class="card-body">
     <ng-template #noMessages>
-      <h4 class="text-center">No messages yet... say hi by using the message box below</h4>
+      <h4 class="chat text-center">No messages yet... say hi by using the message box below</h4>
     </ng-template>
     <ul
       *ngIf="messages?.length; else noMessages"
@@ -59,9 +59,10 @@
           <button
             class="btn btn-primary"
             type="submit"
-            [disabled]="!messageForm.valid && !loading"
+            [disabled]="loading || !messageForm.valid"
           >
             Send
+            <i *ngIf="loading" class="fa fa-spinner fa-spin"></i>
           </button>
         </div>
       </div>
