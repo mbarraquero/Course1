@@ -1,4 +1,5 @@
 ﻿using API.Entities;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 //using System.Security.Cryptography;
@@ -9,6 +10,12 @@ namespace API.Data;
 
 public class Seed
 {
+    public static async Task ClearConnections(DataContext context)
+    {
+        context.Connections.RemoveRange(context.Connections);
+        await context.SaveChangesAsync();
+    }
+
     public static async Task SeedUsers(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager)// (DataContext context)
     {
         //if (await context.Users.AnyAsync()) return;
@@ -23,7 +30,10 @@ public class Seed
             new() { Name = "Admin" },
             new() { Name = "Moderator" }
         };
-        roles.ForEach(async role => await roleManager.CreateAsync(role));
+        foreach (var role in roles)
+        {
+            await roleManager.CreateAsync(role);
+        }
 
         foreach ( var user in users )
         {
@@ -31,12 +41,14 @@ public class Seed
             //user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes("Pa$$w0rd"));
             //user.PasswordSalt = hmac.Key;
             //context.Users.Add(user);
+            user.Created = DateTime.SpecifyKind(user.Created, DateTimeKind.Utc);        // Postgres needs kind specified
+            user.LastActive = DateTime.SpecifyKind(user.LastActive, DateTimeKind.Utc);  // Postgres needs kind specified
             await userManager.CreateAsync(user, "Pa$$w0rd");
             await userManager.AddToRoleAsync(user, "Member");
         }
         //await context.SaveChangesAsync();
 
-        var admin = new AppUser { UserName = "admin", Gender = "male" };
+        var admin = new AppUser { UserName = "admin", Gender = "male", Created = DateTime.UtcNow, LastActive = DateTime.UtcNow };
         await userManager.CreateAsync(admin, "Pa$$w0rd");
         await userManager.AddToRolesAsync(admin, ["Admin", "Moderator"]);
     }
